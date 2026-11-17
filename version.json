@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "name": "Smarty",
   "firmware_url": "https://raw.githubusercontent.com/MAICXEN-STUDIOS/smarty-flasher/main/firmware.bin",
-  "release_notes": "Rilascio v1.3.0: Architettura FreeRTOS Dual-Core (UI su Core 1, Rete/Cloud su Core 0) con Mutex/Semafori/Spinlock anti-race condition, Web Flasher pubblico e funzione riutilizzabile di testo a scorrimento (incluso indirizzo IP completo nel menu)."
+  "release_notes": "Rilascio v1.4.0: Web Server locale integrato (http://smarty.local) stile AledA con controllo completo e WebOTA, sincronizzazione bidirezionale Alexa/SinricPro/Web, telemetria live USB nel Web Flasher e Fleet Dashboard Admin non-bloccante per il monitoraggio remoto di tutti i dispositivi Smarty."
 }
