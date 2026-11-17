@@ -1,0 +1,34 @@
+{
+  "name": "Smarty LED Matrix (ESP32-S3)",
+  "vendor": "MAICXEN STUDIOS",
+  "version": "1.3.0",
+  "release_notes": "Rilascio v1.3.0: Architettura FreeRTOS Dual-Core (UI su Core 1, Rete/Cloud su Core 0) con Mutex/Semafori/Spinlock anti-race condition, Web Flasher pubblico e funzione riutilizzabile di testo a scorrimento (incluso indirizzo IP completo nel menu).",
+  "new_install_prompt_erase": false,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "bootloader.bin",
+          "offset": 0,
+          "label": "Bootloader (0x0000)"
+        },
+        {
+          "path": "partitions.bin",
+          "offset": 32768,
+          "label": "Partition Table (0x8000)"
+        },
+        {
+          "path": "boot_app0.bin",
+          "offset": 69632,
+          "label": "OTA Data (0x11000)"
+        },
+        {
+          "path": "firmware.bin",
+          "offset": 131072,
+          "label": "Smarty Firmware v1.3.0 (0x20000)"
+        }
+      ]
+    }
+  ]
+}
