@@ -3,254 +3,397 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Fleet Control Center (Admin) — MAICXEN STUDIOS</title>
+  <title>Smarty Fleet Admin — MAICXEN STUDIOS</title>
   <style>
     :root {
-      --bg: #070b12;
-      --panel: #101724;
-      --panel-hover: #162032;
-      --border: #1e293b;
+      --bg: #080b11;
+      --surface: #0f1520;
+      --surface-2: #151d2c;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(6, 182, 212, 0.45);
       --text: #f1f5f9;
-      --muted: #94a3b8;
+      --muted: #8b9bb4;
       --green: #10b981;
       --cyan: #06b6d4;
       --amber: #f59e0b;
       --red: #ef4444;
-      --purple: #8b5cf6;
+      --radius: 14px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #0f1e32 0%, var(--bg) 70%);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* Admin Auth Gate */
     .auth-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 50% 20%, #112236 0%, #05080e 75%);
+      background: radial-gradient(circle at 50% 20%, #111c2d 0%, #06080d 75%);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 2000;
       padding: 20px;
     }
 
     .auth-card {
       width: 100%;
-      max-width: 420px;
-      background: var(--panel);
-      border: 1px solid rgba(6, 182, 212, 0.3);
-      border-radius: 20px;
-      padding: 32px 28px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+      max-width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
       text-align: center;
     }
 
-    .badge-vendor {
+    .vendor-tag {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
       color: var(--cyan);
-      background: rgba(6, 182, 212, 0.12);
-      border: 1px solid rgba(6, 182, 212, 0.3);
-      padding: 4px 12px;
-      border-radius: 999px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     input, select {
-      background: #090e17;
+      background: #070a10;
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 14px;
+      border-radius: 9px;
+      padding: 9px 12px;
+      font-size: 13.5px;
       outline: none;
+      transition: border-color 0.15s;
     }
     input:focus, select:focus { border-color: var(--cyan); }
 
     button {
-      background: #1e293b;
+      background: var(--surface-2);
       color: var(--text);
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 8px 13px;
+      font-size: 12.5px;
       font-weight: 600;
       cursor: pointer;
       transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    button:hover { background: #283548; }
+    button:hover { background: #1e293b; border-color: rgba(255,255,255,0.16); }
     button.btn-primary {
-      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-      color: #04130d;
-      border: none;
+      background: var(--green);
+      color: #03150e;
+      border-color: transparent;
       font-weight: 700;
     }
+    button.btn-primary:hover { opacity: 0.92; }
     button.btn-cyan {
-      background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-      color: #04131a;
-      border: none;
-      font-weight: 700;
+      background: rgba(6, 182, 212, 0.15);
+      color: #38bdf8;
+      border-color: rgba(6, 182, 212, 0.35);
     }
     button.btn-danger {
-      background: rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.12);
       color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.35);
+      border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Main Layout */
-    .app-wrap {
+    /* Minimal App Shell */
+    .app-shell {
       display: none;
-      max-width: 1380px;
+      max-width: 1120px;
       margin: 0 auto;
-      padding: 22px 18px 48px;
+      padding: 20px 18px 48px;
     }
 
-    .topbar {
+    .navbar {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 14px;
-      padding-bottom: 18px;
-      margin-bottom: 22px;
+      gap: 12px;
+      padding-bottom: 16px;
+      margin-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
 
-    .topbar h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
-    .topbar p { font-size: 13px; color: var(--muted); }
+    .brand-block h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
+    .brand-block span { font-size: 12px; color: var(--muted); }
 
-    .kpi-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .kpi-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 18px;
-    }
-
-    .kpi-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
-    .kpi-value { font-size: 26px; font-weight: 800; margin-top: 4px; }
-    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    /* Toolbar */
-    .toolbar {
+    .nav-tabs {
       display: flex;
-      flex-wrap: wrap;
+      gap: 4px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .nav-tab:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+    .nav-tab.active {
+      background: var(--surface-2);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+
+    /* Compact KPI Strip */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 640px) {
+      .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .kpi-mini {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-mini .lbl { font-size: 11.5px; color: var(--muted); }
+    .kpi-mini .num { font-size: 20px; font-weight: 800; }
+
+    /* Sections */
+    .section-view { display: none; }
+    .section-view.active { display: block; }
+
+    /* Minimal Filter Bar */
+    .filter-bar {
+      display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      margin-bottom: 18px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
     }
 
-    /* Device Cards Grid */
-    .devices-grid {
+    /* Minimal Device Cards */
+    .fleet-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 410px), 1fr));
-      gap: 16px;
-      margin-bottom: 26px;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
     }
 
-    .dev-card {
-      background: var(--panel);
+    .mini-card {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
+      border-radius: var(--radius);
+      padding: 15px 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      transition: border-color 0.2s;
+      transition: transform 0.14s ease, border-color 0.14s ease;
+      cursor: pointer;
     }
-    .dev-card.online { border-color: rgba(16, 185, 129, 0.4); }
-    .dev-card.offline { opacity: 0.85; }
+    .mini-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .mini-card.online { border-left: 3px solid var(--green); }
+    .mini-card.offline { border-left: 3px solid #475569; opacity: 0.82; }
 
-    .dev-header {
+    .mc-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
     }
+    .mc-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot.off { background: #64748b; }
+
+    .mc-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
-      padding: 3px 9px;
+      padding: 2px 8px;
       border-radius: 999px;
       border: 1px solid transparent;
+      white-space: nowrap;
     }
-    .pill.green { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
-    .pill.red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); }
-    .pill.amber { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35); }
-    .pill.cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border-color: rgba(6, 182, 212, 0.35); }
+    .pill.green { background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+    .pill.amber { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
+    .pill.cyan { background: rgba(6, 182, 212, 0.14); color: #38bdf8; border-color: rgba(6, 182, 212, 0.3); }
+    .pill.muted { background: rgba(255, 255, 255, 0.05); color: var(--muted); }
 
-    .mini-matrix {
-      background: #05080f;
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 10px;
-      padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(23, 1fr);
-      gap: 2.5px;
-    }
-    .m-px { aspect-ratio: 1; border-radius: 50%; background: #141b29; }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 12px;
-      font-size: 12.5px;
-      background: rgba(0,0,0,0.25);
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .meta-item span { display: block; font-size: 11px; color: var(--muted); }
-    .meta-item strong { font-weight: 600; color: var(--text); }
-
-    .dev-actions {
+    .mc-status-row {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      padding-top: 6px;
-      border-top: 1px solid var(--border);
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(0, 0, 0, 0.25);
+      padding: 8px 10px;
+      border-radius: 9px;
     }
 
-    .events-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
+    .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 4px;
+      border: 1px solid rgba(255,255,255,0.25);
     }
+
+    .mc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Sub-section Panels */
+    .panel-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .panel-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .panel-box p { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+
     .events-log {
-      margin-top: 10px;
-      max-height: 240px;
+      max-height: 420px;
       overflow-y: auto;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 12px;
-      background: #060911;
+      background: #06090f;
       border-radius: 10px;
       padding: 12px;
       border: 1px solid var(--border);
     }
-    .log-entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .log-entry { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+    /* POP-UP MODAL (Device Details, Telemetry & Remote Controls) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 12, 0.78);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1500;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-window {
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    .modal-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: #070a10;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .modal-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 7px;
+    }
+    .modal-tab.active {
+      background: var(--surface-2);
+      color: #38bdf8;
+    }
+
+    .modal-pane { display: none; }
+    .modal-pane.active { display: block; }
+
+    .mini-matrix {
+      background: #05070c;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(23, 1fr);
+      gap: 3px;
+      margin-bottom: 14px;
+    }
+    .m-px { aspect-ratio: 1; border-radius: 50%; background: #141b29; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 520px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    .detail-cell {
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .detail-cell span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .detail-cell strong { font-size: 13px; font-weight: 600; }
+
+    .modes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+      gap: 6px;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -258,104 +401,221 @@
   <!-- ADMIN LOGIN SCREEN -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
-      <span class="badge-vendor">MAICXEN STUDIOS &bull; ADMIN ONLY</span>
-      <h2 style="font-size:22px; margin-bottom:6px;">Smarty Fleet Control Center</h2>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">
-        Inserisci la chiave amministratore per decifrare il canale di telemetria e gestire i dispositivi Smarty associati.
+      <span class="vendor-tag">MAICXEN STUDIOS &bull; ADMIN</span>
+      <h2 style="font-size:20px; margin-bottom:6px;">Smarty Fleet Control</h2>
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:18px;">
+        Inserisci la password amministratore per accedere ai dispositivi.
       </p>
-      <form onsubmit="handleAdminLogin(event)" style="display:flex; flex-direction:column; gap:12px;">
-        <input type="password" id="adminPassInput" placeholder="Password Amministratore..." required autocomplete="current-password" />
-        <button type="submit" class="btn-primary" style="padding:12px;">Accedi alla Dashboard Admin</button>
+      <form onsubmit="handleAdminLogin(event)" style="display:flex; flex-direction:column; gap:10px;">
+        <input type="password" id="adminPassInput" placeholder="Password Admin..." required autocomplete="current-password" />
+        <button type="submit" class="btn-primary" style="padding:11px;">Sblocca Dashboard</button>
       </form>
-      <p id="authError" style="color:var(--red); font-size:12.5px; margin-top:10px; display:none;">
-        Password non valida. Riprova.
+      <p id="authError" style="color:var(--red); font-size:12px; margin-top:10px; display:none;">
+        Password errata.
       </p>
     </div>
   </div>
 
-  <!-- MAIN ADMIN DASHBOARD -->
-  <div class="app-wrap" id="appWrap">
-    <div class="topbar">
-      <div>
-        <span class="badge-vendor" style="margin-bottom:4px;">MAICXEN STUDIOS &bull; FLEET TELEMETRY</span>
-        <h1>Smarty Product &amp; Fleet Dashboard</h1>
-        <p>Monitoraggio globale in tempo reale di versioni, connessioni, orari di accensione/spegnimento, telemetria hardware e controllo remoto</p>
+  <!-- MINIMAL ADMIN DASHBOARD -->
+  <div class="app-shell" id="appWrap">
+    <nav class="navbar">
+      <div class="brand-block">
+        <h1>Smarty Fleet <span class="pill green" id="streamStatusPill" style="margin-left:6px;">LIVE</span></h1>
+        <span id="latestFwPill">Release Ufficiale: v1.5.0</span>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <span class="pill green" id="streamStatusPill">Cloud Stream: ATTIVO</span>
-        <span class="pill cyan" id="latestFwPill">Ultima Release GitHub: v--</span>
-        <button onclick="pollHistoricalTelemetry()">Sincronizza Ora</button>
-        <button onclick="exportRegistry()">Esporta JSON</button>
-        <button onclick="document.getElementById('importFile').click()">Importa JSON</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
-        <button class="btn-danger" onclick="logoutAdmin()">Esci</button>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchSection('devices', this)">Dispositivi</button>
+        <button class="nav-tab" onclick="switchSection('actions', this)">Comandi Globali &amp; LAN</button>
+        <button class="nav-tab" onclick="switchSection('logs', this)">Log Eventi</button>
+        <button class="nav-tab" onclick="switchSection('settings', this)">Impostazioni</button>
       </div>
+    </nav>
+
+    <!-- COMPACT KPI BAR -->
+    <div class="kpi-strip">
+      <div class="kpi-mini"><span class="lbl">Registrati</span><span class="num" id="kpiTotal">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Online</span><span class="num" style="color:var(--green);" id="kpiOnline">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Accesi (ON)</span><span class="num" style="color:var(--cyan);" id="kpiPoweredOn">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Da Aggiornare</span><span class="num" style="color:var(--amber);" id="kpiOutdated">0</span></div>
     </div>
 
-    <!-- KPI OVERVIEW -->
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <div class="kpi-title">Dispositivi Registrati</div>
-        <div class="kpi-value" id="kpiTotal">0</div>
-        <div class="kpi-sub">Associati nel registro permanente</div>
+    <!-- SEZIONE 1: DISPOSITIVI (MINIMAL CARDS) -->
+    <section class="section-view active" id="sec-devices">
+      <div class="filter-bar">
+        <input type="text" id="searchFilter" placeholder="Cerca dispositivo (nome, ID, IP)..." oninput="renderFleet()" style="width:260px;" />
+        <button onclick="pollHistoricalTelemetry()">Aggiorna Stato</button>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Connessi Online</div>
-        <div class="kpi-value" style="color:var(--green);" id="kpiOnline">0</div>
-        <div class="kpi-sub">Heartbeat attivo negli ultimi 3 min</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Attualmente Accesi (ON)</div>
-        <div class="kpi-value" style="color:var(--cyan);" id="kpiPoweredOn">0</div>
-        <div class="kpi-sub">Matrice LED in funzione</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Stato Aggiornamenti FOTA</div>
-        <div class="kpi-value" style="color:var(--amber);" id="kpiOutdated">0</div>
-        <div class="kpi-sub">Dispositivi da aggiornare</div>
-      </div>
-    </div>
+      <div class="fleet-grid" id="devicesGrid"></div>
+    </section>
 
-    <!-- TOOLBAR: SEARCH, LAN PROBE & BROADCAST -->
-    <div class="toolbar">
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="searchFilter" placeholder="Filtra per ID, nome, MAC o IP..." oninput="renderFleet()" />
-        <input type="text" id="lanProbeIp" placeholder="Aggiungi IP locale (es. 192.168.1.50)" style="width:220px;" />
-        <button class="btn-cyan" onclick="probeLocalDevice()">Scansiona IP Locale</button>
+    <!-- SEZIONE 2: COMANDI GLOBALI & DISCOVERY LAN -->
+    <section class="section-view" id="sec-actions">
+      <div class="panel-box">
+        <h3>Broadcast a Tutta la Flotta</h3>
+        <p>Invia un messaggio scorrevole o un comando simultaneo a tutti gli Smarty registrati (sia locali sia remoti).</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="broadcastScrollTxt" placeholder="Testo scorrevole da inviare a tutti..." style="flex:1; min-width:200px;" />
+          <button class="btn-primary" onclick="broadcastScroll()">Invia Testo a Tutti</button>
+          <button onclick="broadcastCommand({power:1})">Accendi Tutti</button>
+          <button onclick="broadcastCommand({power:0})">Spegni Tutti</button>
+          <button class="btn-cyan" onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA)</button>
+        </div>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="broadcastScrollTxt" placeholder="Messaggio scorrevole a tutti..." style="width:210px;" />
-        <button class="btn-primary" onclick="broadcastScroll()">Invia a Tutti</button>
-        <button onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA)</button>
-      </div>
-    </div>
 
-    <!-- DEVICES GRID -->
-    <div class="devices-grid" id="devicesGrid"></div>
-
-    <!-- CHRONOLOGICAL EVENT LOG -->
-    <div class="events-panel">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong>Registro Cronologico Eventi Dispositivi (Accensioni, Spegnimenti, Boot, FOTA)</strong>
-        <button onclick="clearEventLog()">Pulisci Log</button>
+      <div class="panel-box">
+        <h3>Aggiunta / Scansione Diretta via IP Locale</h3>
+        <p>Se uno Smarty si trova sulla tua stessa rete Wi-Fi, puoi interrogarlo direttamente inserendo il suo indirizzo IP.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="lanProbeIp" placeholder="Indirizzo IP locale (es. 192.168.1.50)" style="width:260px;" />
+          <button class="btn-cyan" onclick="probeLocalDevice()">Connetti IP Locale</button>
+        </div>
       </div>
-      <div class="events-log" id="eventsLog"></div>
+    </section>
+
+    <!-- SEZIONE 3: REGISTRO CRONOLOGICO EVENTI -->
+    <section class="section-view" id="sec-logs">
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div>
+            <h3>Registro Cronologico Eventi</h3>
+            <p style="margin-bottom:0;">Storico di accensioni, spegnimenti, riavvii e comandi remoti.</p>
+          </div>
+          <button onclick="clearEventLog()">Svuota Log</button>
+        </div>
+        <div class="events-log" id="eventsLog"></div>
+      </div>
+    </section>
+
+    <!-- SEZIONE 4: IMPOSTAZIONI & BACKUP -->
+    <section class="section-view" id="sec-settings">
+      <div class="panel-box">
+        <h3>Backup &amp; Ripristino Registro Dispositivi</h3>
+        <p>Esporta o importa l'elenco dei dispositivi registrati e lo storico eventi in formato JSON.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-cyan" onclick="exportRegistry()">Esporta Backup JSON</button>
+          <button onclick="document.getElementById('importFile').click()">Importa Backup JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <h3>Sicurezza Sessione Admin</h3>
+        <p>Termina la sessione corrente e blocca l'accesso alla dashboard.</p>
+        <button class="btn-danger" onclick="logoutAdmin()">Blocca ed Esci dalla Dashboard</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- POP-UP MODAL: ISPETTORE DETTAGLI, TELEMETRIA E CONTROLLO DISPOSITIVO -->
+  <div class="modal-backdrop" id="deviceModal" onclick="if(event.target===this)closeDeviceModal()">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h2 id="mTitle" style="font-size:18px; font-weight:800;">Smarty</h2>
+            <button onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rinomina</button>
+          </div>
+          <div id="mSubtitle" style="font-size:12px; color:var(--muted); margin-top:3px;">ID: --</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="pill green" id="mOnlinePill">ONLINE</span>
+          <button onclick="closeDeviceModal()" style="padding:5px 10px;">Chiudi &times;</button>
+        </div>
+      </div>
+
+      <div class="mini-matrix" id="mMatrix"></div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Controlli &amp; Effetti</button>
+        <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetria &amp; Orari</button>
+        <button class="modal-tab" onclick="switchModalTab('sys', this)">3. Firmware &amp; Sistema</button>
+      </div>
+
+      <!-- MODAL TAB 1: CONTROLLI & EFFETTI -->
+      <div class="modal-pane active" id="mpane-ctrl">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
+          <button id="mPwrBtn" class="btn-primary" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">ACCENDI / SPEGNI</button>
+          <input type="color" id="mColorPicker" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="Colore RGB" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div class="detail-cell">
+            <span>Luminosità (<strong id="mBrightLbl">100%</strong>)</span>
+            <input type="range" id="mBrightSlider" min="0" max="100" value="100" style="width:100%; margin-top:6px;" oninput="document.getElementById('mBrightLbl').textContent=this.value+'%'" onchange="sendModalCmd({brightness:Number(this.value)})" />
+          </div>
+          <div class="detail-cell">
+            <span>Velocità (<strong id="mSpeedLbl">75%</strong>)</span>
+            <input type="range" id="mSpeedSlider" min="1" max="100" value="75" style="width:100%; margin-top:6px;" oninput="document.getElementById('mSpeedLbl').textContent=this.value+'%'" onchange="sendModalCmd({speed:Number(this.value)})" />
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <span style="font-size:11.5px; color:var(--muted);">Modalità Visualizzazione</span>
+          <div class="modes-grid" id="mModesGrid"></div>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="mScrollInput" placeholder="Invia testo scorrevole personalizzato..." style="flex:1;" />
+          <button class="btn-cyan" onclick="sendModalScroll()">Invia Testo</button>
+        </div>
+      </div>
+
+      <!-- MODAL TAB 2: TELEMETRIA & ORARI -->
+      <div class="modal-pane" id="mpane-telem">
+        <div class="detail-grid" id="mTelemGrid"></div>
+      </div>
+
+      <!-- MODAL TAB 3: FIRMWARE & SISTEMA -->
+      <div class="modal-pane" id="mpane-sys">
+        <div class="detail-grid" id="mSysGrid" style="margin-bottom:16px;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--border);">
+          <button class="btn-cyan" onclick="sendModalCmd({action:'fota_check'})">Controlla FOTA</button>
+          <button class="btn-primary" onclick="sendModalCmd({action:'fota_update'})">Forza Aggiornamento FOTA</button>
+          <button onclick="sendModalCmd({action:'reboot'})">Riavvia Dispositivo</button>
+          <button class="btn-danger" style="margin-left:auto;" onclick="removeCurrentDevice()">Rimuovi dal Registro</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    // Hash SHA-256 della password admin predefinita ("MaicxenSmarty2026!")
     const DEFAULT_ADMIN_HASH = "8c90f679486504b8e729a59057a1a8a3818b27988635d9354586a076253c749e";
     const RELAY_HOST = "https://ntfy.sh";
     const FLEET_TOPIC = "maicxen_smarty_fleet_v1_7f9a2c8e4b1d";
     const CMD_PREFIX = "maicxen_smarty_cmd_v1_";
     const REGISTRY_STORAGE_KEY = "maicxen_smarty_fleet_registry_v1";
     const LOG_STORAGE_KEY = "maicxen_smarty_fleet_logs_v1";
+    const MODES = ["Start", "Orario", "Light", "Cuore", "Rainbow", "Game", "Ti_amo", "Love_u", "Ema", "Sofi", "Cuori", "WIFI"];
 
     let fleetRegistry = {};
     let eventLogs = [];
     let latestGitHubVersion = "1.5.0";
     let sseSource = null;
+    let selectedHwId = null;
+
+    // Inizializza pulsanti modalità nel pop-up
+    const mModesGrid = document.getElementById("mModesGrid");
+    MODES.forEach(m => {
+      const b = document.createElement("button");
+      b.textContent = m.replace("_", " ");
+      b.onclick = () => sendModalCmd({ mode: m });
+      mModesGrid.appendChild(b);
+    });
+
+    window.switchSection = function(secId, btnEl) {
+      document.querySelectorAll(".section-view").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+      document.getElementById("sec-" + secId).classList.add("active");
+      btnEl.classList.add("active");
+    };
+
+    window.switchModalTab = function(paneId, btnEl) {
+      document.querySelectorAll(".modal-pane").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".modal-tab").forEach(b => b.classList.remove("active"));
+      document.getElementById("mpane-" + paneId).classList.add("active");
+      btnEl.classList.add("active");
+    };
 
     async function sha256Hex(str) {
       const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -399,13 +659,12 @@
     }
 
     function pushEventLog(hwId, eventType, detail) {
-      const entry = {
+      eventLogs.unshift({
         time: new Date().toLocaleString("it-IT"),
         hwId,
         eventType,
         detail
-      };
-      eventLogs.unshift(entry);
+      });
       if (eventLogs.length > 150) eventLogs.length = 150;
       localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(eventLogs));
       renderEventLogs();
@@ -414,7 +673,7 @@
     function renderEventLogs() {
       const box = document.getElementById("eventsLog");
       if (!eventLogs.length) {
-        box.innerHTML = "<div style='color:var(--muted)'>Nessun evento registrato. In attesa di telemetria dai dispositivi...</div>";
+        box.innerHTML = "<div style='color:var(--muted)'>Nessun evento registrato.</div>";
         return;
       }
       box.innerHTML = eventLogs.map(e =>
@@ -441,19 +700,11 @@
         last_seen_ms: 0
       };
 
-      // Evita di sovrascrivere lo stato attuale con messaggi storici più vecchi
-      if (seenMs < prev.last_seen_ms) {
-        return;
-      }
+      if (seenMs < prev.last_seen_ms) return;
 
       const prevPower = prev.power;
-      const updated = {
-        ...prev,
-        ...pkt,
-        last_seen_ms: seenMs
-      };
+      const updated = { ...prev, ...pkt, last_seen_ms: seenMs };
 
-      // Se il dispositivo si è acceso o spento e non aveva ancora l'epoch salvato, usa il timestamp del server
       if (pkt.event === "power_on" && (!updated.last_on_ts || updated.last_on_ts < 1700000000)) {
         updated.last_on_ts = Math.floor(seenMs / 1000);
       }
@@ -468,11 +719,14 @@
         pushEventLog(
           id,
           pkt.event.toUpperCase(),
-          `Stato: ${pkt.power ? "ACCESO" : "SPENTO"} | Modo: ${pkt.mode} | FW: v${pkt.fw} | IP: ${pkt.wifi_ip}`
+          `Stato: ${pkt.power ? "ACCESO" : "SPENTO"} | Modo: ${pkt.mode} | FW: v${pkt.fw}`
         );
       }
 
       renderFleet();
+      if (selectedHwId === id) {
+        populateModal(id);
+      }
     }
 
     async function fetchLatestGitHubVersion() {
@@ -482,7 +736,7 @@
           const v = await res.json();
           if (v.version) {
             latestGitHubVersion = v.version;
-            document.getElementById("latestFwPill").textContent = `Ultima Release GitHub: v${latestGitHubVersion}`;
+            document.getElementById("latestFwPill").textContent = `Release Ufficiale: v${latestGitHubVersion}`;
           }
         }
       } catch (_) {}
@@ -493,14 +747,12 @@
         const res = await fetch(`${RELAY_HOST}/${FLEET_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
         if (!res.ok) return;
         const text = await res.text();
-        const lines = text.split("\n");
-        for (const line of lines) {
+        for (const line of text.split("\n")) {
           if (!line.trim()) continue;
           try {
             const env = JSON.parse(line);
             if (env.event === "message" && env.message) {
-              const pkt = JSON.parse(env.message);
-              ingestTelemetryPacket(pkt, env.time);
+              ingestTelemetryPacket(JSON.parse(env.message), env.time);
             }
           } catch (_) {}
         }
@@ -512,12 +764,7 @@
       if (sseSource) sseSource.close();
       sseSource = new EventSource(`${RELAY_HOST}/${FLEET_TOPIC}/sse`);
       const pill = document.getElementById("streamStatusPill");
-
-      sseSource.onopen = () => {
-        pill.textContent = "Cloud Stream: LIVE (SSE)";
-        pill.className = "pill green";
-      };
-
+      sseSource.onopen = () => { pill.textContent = "LIVE"; pill.className = "pill green"; };
       sseSource.onmessage = (ev) => {
         try {
           const data = JSON.parse(ev.data);
@@ -526,11 +773,7 @@
           ingestTelemetryPacket(pkt, data.time);
         } catch (_) {}
       };
-
-      sseSource.onerror = () => {
-        pill.textContent = "Cloud Stream: Riconnessione...";
-        pill.className = "pill amber";
-      };
+      sseSource.onerror = () => { pill.textContent = "SYNC..."; pill.className = "pill amber"; };
     }
 
     window.probeLocalDevice = async function() {
@@ -541,30 +784,30 @@
         if (!res.ok) throw new Error("HTTP " + res.status);
         const pkt = await res.json();
         ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000));
-        pushEventLog(pkt.hw_id, "LAN_DISCOVERY", `Rilevato direttamente sulla rete locale (${ip})`);
+        openDeviceModal(pkt.hw_id);
       } catch (err) {
-        alert(`Impossibile contattare http://${ip}/api/status: verifica che il dispositivo sia acceso e sulla stessa rete.`);
+        alert(`Impossibile contattare http://${ip}/api/status`);
       }
     };
 
-    window.sendDeviceCommand = async function(hwId, cmdObj) {
+    window.sendDeviceCommand = async function(hwId, cmdObj, ev = null) {
+      if (ev) ev.stopPropagation();
       const dev = fleetRegistry[hwId];
-      // Invio tramite canale Cloud Admin verso il dispositivo
       try {
         await fetch(`${RELAY_HOST}/${CMD_PREFIX}${hwId}`, {
           method: "POST",
           body: JSON.stringify(cmdObj)
         });
-        pushEventLog(hwId, "ADMIN_CMD", `Inviato comando cloud: ${JSON.stringify(cmdObj)}`);
+        pushEventLog(hwId, "ADMIN_CMD", JSON.stringify(cmdObj));
       } catch (_) {}
 
-      // Se il dispositivo ha un IP locale raggiungibile, invia anche via HTTP diretto per latenza zero
       if (dev && dev.wifi_ip && dev.wifi_ip !== "0.0.0.0") {
         const params = new URLSearchParams();
         if (cmdObj.power !== undefined) params.set("power", cmdObj.power);
         if (cmdObj.mode !== undefined) params.set("mode", cmdObj.mode);
         if (cmdObj.scroll !== undefined) params.set("scroll", cmdObj.scroll);
         if (cmdObj.brightness !== undefined) params.set("brightness", cmdObj.brightness);
+        if (cmdObj.speed !== undefined) params.set("speed", cmdObj.speed);
         if (cmdObj.hex !== undefined) params.set("hex", cmdObj.hex);
         if ([...params.keys()].length > 0) {
           fetch(`http://${dev.wifi_ip}/api/set?${params.toString()}`).then(r => r.json()).then(pkt => {
@@ -582,32 +825,7 @@
 
     window.broadcastScroll = function() {
       const txt = document.getElementById("broadcastScrollTxt").value.trim();
-      if (!txt) return;
-      window.broadcastCommand({ scroll: txt });
-    };
-
-    window.renameDevice = function(hwId) {
-      const cur = fleetRegistry[hwId]?.alias || hwId;
-      const next = prompt("Inserisci un nome/etichetta per questo Smarty:", cur);
-      if (next && next.trim()) {
-        fleetRegistry[hwId].alias = next.trim();
-        saveRegistry();
-        renderFleet();
-      }
-    };
-
-    window.removeDevice = function(hwId) {
-      if (!confirm(`Rimuovere ${hwId} dal registro della dashboard?`)) return;
-      delete fleetRegistry[hwId];
-      saveRegistry();
-      renderFleet();
-    };
-
-    window.promptDeviceScroll = function(hwId) {
-      const txt = prompt(`Testo scorrevole da inviare a ${hwId}:`);
-      if (txt && txt.trim()) {
-        window.sendDeviceCommand(hwId, { scroll: txt.trim() });
-      }
+      if (txt) window.broadcastCommand({ scroll: txt });
     };
 
     function fmtTs(epochSec) {
@@ -618,27 +836,30 @@
 
     function fmtDur(sec) {
       sec = Number(sec) || 0;
-      const d = Math.floor(sec / 86400);
-      const h = Math.floor((sec % 86400) / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
+      const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60);
       if (d > 0) return `${d}g ${h}h ${m}m`;
-      if (h > 0) return `${h}h ${m}m ${s}s`;
-      return `${m}m ${s}s`;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m ${sec % 60}s`;
     }
 
-    function renderFleet() {
+    function fmtRelTime(ms) {
+      if (!ms) return "N/D";
+      const diffSec = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+      if (diffSec < 60) return `${diffSec}s fa`;
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m fa`;
+      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h fa`;
+      return new Date(ms).toLocaleDateString("it-IT");
+    }
+
+    // --- MINIMAL CARDS RENDERER ---
+    window.renderFleet = function() {
       const q = (document.getElementById("searchFilter").value || "").toLowerCase();
       const allDevs = Object.values(fleetRegistry).sort((a, b) => (b.last_seen_ms || 0) - (a.last_seen_ms || 0));
       const nowMs = Date.now();
 
-      let onlineCount = 0;
-      let poweredOnCount = 0;
-      let outdatedCount = 0;
-
+      let onlineCount = 0, poweredOnCount = 0, outdatedCount = 0;
       allDevs.forEach(d => {
-        const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
-        if (isOnline) onlineCount++;
+        if ((nowMs - (d.last_seen_ms || 0)) < 180000) onlineCount++;
         if (d.power) poweredOnCount++;
         if (d.fw && d.fw !== latestGitHubVersion) outdatedCount++;
       });
@@ -653,16 +874,14 @@
         return (
           (d.hw_id || "").toLowerCase().includes(q) ||
           (d.alias || "").toLowerCase().includes(q) ||
-          (d.mac || "").toLowerCase().includes(q) ||
-          (d.wifi_ip || "").toLowerCase().includes(q) ||
-          (d.profile || "").toLowerCase().includes(q)
+          (d.wifi_ip || "").toLowerCase().includes(q)
         );
       });
 
       const grid = document.getElementById("devicesGrid");
       if (!filtered.length) {
-        grid.innerHTML = `<div class="kpi-card" style="grid-column:1/-1; text-align:center; padding:32px; color:var(--muted);">
-          Nessun dispositivo Smarty ancora associato o trovato con il filtro corrente. Appena un dispositivo con firmware v1.4.0+ si connette al Wi-Fi, comparirà automaticamente qui.
+        grid.innerHTML = `<div class="panel-box" style="grid-column:1/-1; text-align:center; color:var(--muted);">
+          Nessun dispositivo Smarty registrato. Appena uno Smarty con v1.4.0+ si connette a Internet, apparirà qui automaticamente.
         </div>`;
         return;
       }
@@ -670,68 +889,148 @@
       grid.innerHTML = filtered.map(d => {
         const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
         const isUpToDate = (d.fw === latestGitHubVersion);
-        const lastSeenStr = d.last_seen_ms ? new Date(d.last_seen_ms).toLocaleString("it-IT") : "N/D";
-        const firstRegStr = d.first_registered_ms ? new Date(d.first_registered_ms).toLocaleDateString("it-IT") : "N/D";
         const hex = d.hex || "#10b981";
 
-        let pxHtml = "";
-        for (let i = 0; i < 23 * 5; i++) {
-          const r = Math.floor(i / 23), c = i % 23;
-          const lit = d.power && (((r + c) % 2 === 0) || d.mode === "Light");
-          const style = lit ? `background:${hex}; box-shadow:0 0 5px ${hex};` : "";
-          pxHtml += `<div class="m-px" style="${style}"></div>`;
-        }
-
         return `
-          <div class="dev-card ${isOnline ? "online" : "offline"}">
-            <div class="dev-header">
+          <div class="mini-card ${isOnline ? "online" : "offline"}" onclick="openDeviceModal('${d.hw_id}')">
+            <div class="mc-top">
               <div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <strong style="font-size:16px;">${d.alias || d.hw_id}</strong>
-                  <button onclick="renameDevice('${d.hw_id}')" style="padding:2px 7px; font-size:11px;">Rinomina</button>
+                <div class="mc-title">
+                  <span class="dot ${isOnline ? "on" : "off"}"></span>
+                  <span>${d.alias || d.hw_id}</span>
                 </div>
-                <div style="font-size:12px; color:var(--muted); margin-top:2px;">
-                  ID: <strong>${d.hw_id}</strong> &bull; Profilo: ${d.profile || "Smarty_1"} &bull; MAC: ${d.mac || "--"}
-                </div>
+                <div class="mc-sub">${d.hw_id} &bull; Visto ${fmtRelTime(d.last_seen_ms)}</div>
               </div>
-              <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
-                <span class="pill ${isOnline ? "green" : "red"}">${isOnline ? "ONLINE" : "OFFLINE"}</span>
-                <span class="pill ${d.power ? "cyan" : "amber"}">${d.power ? "ACCESO" : "SPENTO"}</span>
-                <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"} (${d.ota_part || "app0"})</span>
-              </div>
+              <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"}</span>
             </div>
 
-            <div class="mini-matrix">${pxHtml}</div>
-
-            <div class="meta-grid">
-              <div class="meta-item"><span>Ultima Volta Connesso</span><strong>${lastSeenStr}</strong></div>
-              <div class="meta-item"><span>Stato Aggiornamento</span><strong>${isUpToDate ? "Aggiornato (v" + d.fw + ")" : "Disponibile v" + latestGitHubVersion}</strong></div>
-              <div class="meta-item"><span>Quando Acceso (Ultimo ON)</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
-              <div class="meta-item"><span>Quando Spento (Ultimo OFF)</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
-              <div class="meta-item"><span>Tempo Totale Acceso</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
-              <div class="meta-item"><span>Uptime Sessione / Boot</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boot)</strong></div>
-              <div class="meta-item"><span>Modalità / Luminosità</span><strong>${d.mode || "--"} (${d.brightness ?? 100}% • Vel ${d.speed ?? 75}%)</strong></div>
-              <div class="meta-item"><span>SoC Temp / Heap Libera</span><strong>${Number(d.temp || 0).toFixed(1)}°C • ${Math.round((d.heap_free || 0)/1024)} KB</strong></div>
-              <div class="meta-item"><span>Rete Wi-Fi &amp; RSSI</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
-              <div class="meta-item"><span>IP Locale &amp; SinricPro</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">${d.wifi_ip || "--"}</a> • ${d.cloud_online ? "Cloud OK" : "Cloud Off"}</strong></div>
+            <div class="mc-status-row">
+              <span><span class="color-dot" style="background:${d.power ? hex : '#334155'}"></span>${d.power ? (d.mode || "ON") : "Spento"}</span>
+              <span>${d.brightness ?? 100}% &bull; ${Number(d.temp || 0).toFixed(0)}°C</span>
             </div>
 
-            <div class="dev-actions">
-              <button class="btn-primary" onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}})">
+            <div class="mc-footer">
+              <button class="${d.power ? '' : 'btn-primary'}" onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}}, event)">
                 ${d.power ? "Spegni" : "Accendi"}
               </button>
-              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Orario'})">Orario</button>
-              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Cuore'})">Cuore</button>
-              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Rainbow'})">Rainbow</button>
-              <button class="btn-cyan" onclick="promptDeviceScroll('${d.hw_id}')">Testo...</button>
-              <button onclick="sendDeviceCommand('${d.hw_id}', {action:'fota_update'})">Forza FOTA</button>
-              <button onclick="sendDeviceCommand('${d.hw_id}', {action:'reboot'})">Riavvia</button>
-              <button class="btn-danger" onclick="removeDevice('${d.hw_id}')" style="margin-left:auto;">Rimuovi</button>
+              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Dettagli &amp; Controlli &rarr;</button>
             </div>
           </div>
         `;
       }).join("");
+    };
+
+    // --- POP-UP MODAL LOGIC ---
+    window.openDeviceModal = function(hwId, ev = null) {
+      if (ev) ev.stopPropagation();
+      selectedHwId = hwId;
+      populateModal(hwId);
+      document.getElementById("deviceModal").classList.add("open");
+    };
+
+    window.closeDeviceModal = function() {
+      selectedHwId = null;
+      document.getElementById("deviceModal").classList.remove("open");
+    };
+
+    function populateModal(hwId) {
+      const d = fleetRegistry[hwId];
+      if (!d) return;
+
+      const isOnline = (Date.now() - (d.last_seen_ms || 0)) < 180000;
+      const isUpToDate = (d.fw === latestGitHubVersion);
+      const hex = d.hex || "#10b981";
+
+      document.getElementById("mTitle").textContent = d.alias || d.hw_id;
+      document.getElementById("mSubtitle").textContent = `Hardware ID: ${d.hw_id} • Profilo: ${d.profile || "Smarty_1"} • MAC: ${d.mac || "--"}`;
+
+      const pill = document.getElementById("mOnlinePill");
+      pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
+      pill.className = "pill " + (isOnline ? "green" : "amber");
+
+      // Matrice 23x5 nel Pop-up
+      let pxHtml = "";
+      for (let i = 0; i < 23 * 5; i++) {
+        const r = Math.floor(i / 23), c = i % 23;
+        const lit = d.power && (((r + c) % 2 === 0) || d.mode === "Light");
+        pxHtml += `<div class="m-px" style="${lit ? `background:${hex};box-shadow:0 0 6px ${hex};` : ''}"></div>`;
+      }
+      document.getElementById("mMatrix").innerHTML = pxHtml;
+
+      const pwrBtn = document.getElementById("mPwrBtn");
+      pwrBtn.textContent = d.power ? "SPEGNI DISPOSITIVO (ATTUALMENTE ON)" : "ACCENDI DISPOSITIVO (ATTUALMENTE OFF)";
+      pwrBtn.className = d.power ? "btn-danger" : "btn-primary";
+
+      document.getElementById("mColorPicker").value = hex.toLowerCase();
+      document.getElementById("mBrightSlider").value = d.brightness ?? 100;
+      document.getElementById("mBrightLbl").textContent = (d.brightness ?? 100) + "%";
+      document.getElementById("mSpeedSlider").value = d.speed ?? 75;
+      document.getElementById("mSpeedLbl").textContent = (d.speed ?? 75) + "%";
+
+      // Tab 2: Telemetria & Orari
+      document.getElementById("mTelemGrid").innerHTML = `
+        <div class="detail-cell"><span>Ultima Volta Connesso</span><strong>${d.last_seen_ms ? new Date(d.last_seen_ms).toLocaleString("it-IT") : "N/D"}</strong></div>
+        <div class="detail-cell"><span>Prima Associazione</span><strong>${d.first_registered_ms ? new Date(d.first_registered_ms).toLocaleString("it-IT") : "N/D"}</strong></div>
+        <div class="detail-cell"><span>Quando Acceso (Ultimo ON)</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
+        <div class="detail-cell"><span>Quando Spento (Ultimo OFF)</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
+        <div class="detail-cell"><span>Tempo Totale Acceso</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
+        <div class="detail-cell"><span>Uptime Sessione / Riavvii</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boot)</strong></div>
+        <div class="detail-cell"><span>Rete Wi-Fi &amp; Segnale</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
+        <div class="detail-cell"><span>Web Server Locale</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">http://${d.wifi_ip || "--"} &nearr;</a></strong></div>
+        <div class="detail-cell"><span>Temperatura SoC ESP32-S3</span><strong>${Number(d.temp || 0).toFixed(1)} °C</strong></div>
+        <div class="detail-cell"><span>Memoria RAM (Free / Min)</span><strong>${Math.round((d.heap_free || 0)/1024)} KB / ${Math.round((d.heap_min || 0)/1024)} KB</strong></div>
+      `;
+
+      // Tab 3: Firmware & Sistema
+      document.getElementById("mSysGrid").innerHTML = `
+        <div class="detail-cell"><span>Versione Installata</span><strong>v${d.fw || "--"} (${isUpToDate ? "Aggiornato" : "Da aggiornare a v" + latestGitHubVersion})</strong></div>
+        <div class="detail-cell"><span>Partizione OTA Attiva</span><strong>${d.ota_part || "app0"} (Dual-OTA Rollback)</strong></div>
+        <div class="detail-cell"><span>Stato Modulo FOTA</span><strong>${d.fota_status || "Pronto"}</strong></div>
+        <div class="detail-cell"><span>Supporto FOTA USB Nativo</span><strong>${d.serial_ota ? "Attivo (921600 baud CRC16)" : "Non presente (< v1.5.0)"}</strong></div>
+        <div class="detail-cell"><span>Stato Cloud SinricPro / Alexa</span><strong>${d.cloud_online ? "Connesso (ONLINE)" : "Disconnesso"}</strong></div>
+        <div class="detail-cell"><span>SinricPro Device ID</span><strong>${d.sinric_id || "--"}</strong></div>
+      `;
     }
+
+    window.sendModalCmd = function(cmdObj) {
+      if (!selectedHwId) return;
+      window.sendDeviceCommand(selectedHwId, cmdObj);
+    };
+
+    window.toggleModalDevicePower = function() {
+      if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
+      const cur = fleetRegistry[selectedHwId].power;
+      window.sendDeviceCommand(selectedHwId, { power: cur ? 0 : 1 });
+    };
+
+    window.sendModalScroll = function() {
+      const txt = document.getElementById("mScrollInput").value.trim();
+      if (txt && selectedHwId) {
+        window.sendDeviceCommand(selectedHwId, { scroll: txt });
+        document.getElementById("mScrollInput").value = "";
+      }
+    };
+
+    window.renameCurrentDevice = function() {
+      if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
+      const cur = fleetRegistry[selectedHwId].alias || selectedHwId;
+      const next = prompt("Nome/etichetta per questo Smarty:", cur);
+      if (next && next.trim()) {
+        fleetRegistry[selectedHwId].alias = next.trim();
+        saveRegistry();
+        renderFleet();
+        populateModal(selectedHwId);
+      }
+    };
+
+    window.removeCurrentDevice = function() {
+      if (!selectedHwId) return;
+      if (!confirm(`Rimuovere ${selectedHwId} dal registro?`)) return;
+      delete fleetRegistry[selectedHwId];
+      saveRegistry();
+      closeDeviceModal();
+      renderFleet();
+    };
 
     window.exportRegistry = function() {
       const blob = new Blob([JSON.stringify({ fleetRegistry, eventLogs }, null, 2)], { type: "application/json" });
@@ -753,7 +1052,7 @@
           saveRegistry();
           renderFleet();
           renderEventLogs();
-        } catch (err) {
+        } catch (_) {
           alert("File JSON non valido");
         }
       };
