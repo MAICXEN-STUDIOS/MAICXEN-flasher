@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Studio: Web Flasher &amp; USB Telemetry — MAICXEN STUDIOS</title>
+  <title>Smarty Studio: Hybrid USB FOTA &amp; Web Flasher — MAICXEN STUDIOS</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -236,7 +236,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 11.5px;
       color: #a7f3d0;
-      height: 155px;
+      height: 165px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
@@ -260,7 +260,7 @@
     <div class="header">
       <span class="vendor-badge">MAICXEN STUDIOS</span>
       <h1>Smarty ESP32-S3 Web Studio</h1>
-      <p class="subtitle">Installazione Firmware WebSerial (No Flash Erase), Telemetria Live USB &amp; Specifiche Prodotto</p>
+      <p class="subtitle">Aggiornamento Ibrido Intelligente: <strong>FOTA Nativo via USB</strong> (con barra LED sul dispositivo) o Fallback Bootloader esptool-js</p>
     </div>
 
     <div class="matrix-wrapper">
@@ -272,12 +272,12 @@
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('flash', this)">1. Installa Firmware</button>
+      <button class="tab-btn active" onclick="switchTab('flash', this)">1. Aggiorna / Flash Firmware</button>
       <button class="tab-btn" onclick="switchTab('telemetry', this)">2. Telemetria &amp; Controllo USB</button>
       <button class="tab-btn" onclick="switchTab('specs', this)">3. Dati Prodotto &amp; Memoria</button>
     </div>
 
-    <!-- TAB 1: WEB FLASHER -->
+    <!-- TAB 1: HYBRID USB FOTA + ESPTOOL WEB FLASHER -->
     <div class="tab-panel active" id="tab-flash">
       <div class="info-card">
         <div class="info-row">
@@ -285,13 +285,20 @@
             <strong>Ultimo Firmware Ufficiale:</strong>
             <span class="version-pill" id="fwVersion">Caricamento...</span>
           </div>
-          <span class="safe-pill">No Flash Erase (NVS Wi-Fi &amp; Stato Preservati)</span>
+          <span class="safe-pill" id="modeBadge">Auto-Detect: USB FOTA / esptool-js</span>
         </div>
         <div class="release-notes" id="fwNotes">Connessione ai metadati del firmware in corso...</div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px; color:var(--text-muted);">
+          <strong>Logica Intelligente Dual-Mode:</strong> Alla selezione della porta, il Web Flasher interroga la versione installata su Smarty:
+          <ul style="padding-left:18px; margin-top:4px;">
+            <li>Se rileva firmware <strong>&ge; v1.5.0</strong>: attiva la <strong>procedura nativa FOTA del dispositivo via USB</strong> (con barra di avanzamento reale sulla matrice LED 23x5 e scrittura sulla partizione OTA gemella con Rollback Protection).</li>
+            <li>Se rileva firmware <strong>&lt; v1.5.0</strong> o chip vergine: esegue automaticamente il <strong>Flashing Classico esptool-js</strong> (senza cancellare la partizione NVS).</li>
+          </ul>
+        </div>
       </div>
 
       <button class="btn-flash" id="flashBtn">
-        Scegli Porta USB e Installa Firmware (Senza Cancellare Flash)
+        Scegli Porta USB e Avvia Aggiornamento Intelligente
       </button>
 
       <div class="progress-section" id="progressSection">
@@ -307,7 +314,7 @@
       <div class="status-banner" id="statusBanner"></div>
 
       <details style="margin-top:16px;" id="consoleDetails">
-        <summary style="font-size:12px; color:var(--text-muted); cursor:pointer;">Mostra log dettagliato esptool-js</summary>
+        <summary style="font-size:12px; color:var(--text-muted); cursor:pointer;">Mostra log di aggiornamento (USB FOTA / esptool-js)</summary>
         <div class="console-box" id="consoleLog"></div>
       </details>
     </div>
@@ -445,6 +452,7 @@
 
     const fwVersionEl = document.getElementById("fwVersion");
     const fwNotesEl = document.getElementById("fwNotes");
+    const modeBadgeEl = document.getElementById("modeBadge");
     const flashBtn = document.getElementById("flashBtn");
     const progressSection = document.getElementById("progressSection");
     const progressStep = document.getElementById("progressStep");
@@ -511,45 +519,267 @@
       loadManifest();
     }
 
-    async function fetchBinaryAsBstr(url, esploader) {
-      const res = await fetch(`${url}?cb=${Date.now()}`, { cache: "no-store" });
-      if (!res.ok) throw new Error(`Impossibile scaricare ${url} (HTTP ${res.status})`);
-      const buf = await res.arrayBuffer();
-      return esploader.ui8ToBstr(new Uint8Array(buf));
+    // CRC-16/CCITT-FALSE per verifica pacchetti USB FOTA
+    function computeCrc16Ccitt(uint8Arr) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < uint8Arr.length; i++) {
+        crc ^= (uint8Arr[i] << 8);
+        for (let b = 0; b < 8; b++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+          } else {
+            crc = (crc << 1) & 0xFFFF;
+          }
+        }
+      }
+      return crc & 0xFFFF;
     }
 
-    // Disconnette eventuale sessione diagnostica prima del flash
-    let diagPort = null;
-    let diagReader = null;
-    let diagTimer = null;
-
-    async function closeUsbDiagnostics() {
-      if (diagTimer) { clearInterval(diagTimer); diagTimer = null; }
-      if (diagReader) {
-        try { await diagReader.cancel(); } catch (_) {}
-        diagReader = null;
-      }
-      if (diagPort) {
-        try { await diagPort.close(); } catch (_) {}
-        diagPort = null;
-      }
-      document.getElementById("usbDiagBtn").textContent = "Connetti Telemetria USB";
+    function isVersionAtLeast(verStr, minMajor, minMinor, minPatch) {
+      if (!verStr) return false;
+      const parts = String(verStr).split(".").map(n => parseInt(n, 10) || 0);
+      const [maj = 0, min = 0, pat = 0] = parts;
+      if (maj !== minMajor) return maj > minMajor;
+      if (min !== minMinor) return min > minMinor;
+      return pat >= minPatch;
     }
 
-    flashBtn.addEventListener("click", async () => {
-      if (!manifestData || !manifestData.builds || !manifestData.builds[0]) return;
-      await closeUsbDiagnostics();
+    /**
+     * Fase 1: Interroga il dispositivo a 9600 baud (senza resettarlo in bootloader)
+     * per leggere la versione firmware installata e verificare il supporto FOTA USB.
+     */
+    async function probeDeviceVersion(port) {
+      let reader = null;
+      try {
+        await port.open({ baudRate: 9600 });
+        try {
+          await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+        } catch (_) {}
 
-      let port = null;
-      let transport = null;
+        const writer = port.writable.getWriter();
+        await writer.write(new TextEncoder().encode("\ntelemetry\n"));
+        writer.releaseLock();
+
+        reader = port.readable.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        const deadline = Date.now() + 1400;
+
+        while (Date.now() < deadline) {
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ timeout: true }), 250));
+          const res = await Promise.race([reader.read(), timeoutPromise]);
+          if (res.timeout) continue;
+          if (res.done) break;
+          if (res.value) {
+            buf += decoder.decode(res.value, { stream: true });
+            let nl;
+            while ((nl = buf.indexOf("\n")) >= 0) {
+              const line = buf.slice(0, nl).trim();
+              buf = buf.slice(nl + 1);
+              if (line.startsWith("SMARTY_TELEMETRY:")) {
+                const json = JSON.parse(line.slice("SMARTY_TELEMETRY:".length));
+                await reader.cancel();
+                reader.releaseLock();
+                reader = null;
+                await port.close();
+                return json;
+              }
+            }
+          }
+        }
+      } catch (_) {}
+
+      if (reader) {
+        try { await reader.cancel(); reader.releaseLock(); } catch (_) {}
+      }
+      try { await port.close(); } catch (_) {}
+      return null;
+    }
+
+    /**
+     * Procedura A: Aggiornamento Nativo FOTA via USB Serial ad alta velocità (921600 baud)
+     * Attiva la stessa identica procedura di FotaManager (Update sulla partizione OTA gemella +
+     * barra di progresso a 23 colonne sulla matrice LED fisica di Smarty + Rollback Protection).
+     */
+    async function runNativeUsbFota(port, fwBytes, targetVer) {
+      const otaBaud = 921600;
+      let reader = null;
 
       try {
-        setStatus(null, "");
-        port = await navigator.serial.requestPort();
+        // 1. Invia comando di avvio FOTA USB a 9600 baud
+        await port.open({ baudRate: 9600 });
+        try { await port.setSignals({ dataTerminalReady: false, requestToSend: false }); } catch (_) {}
 
-        flashBtn.disabled = true;
-        espLoaderTerminal.clean();
-        updateProgress("Connessione a ESP32-S3 in corso...", 2);
+        let writer = port.writable.getWriter();
+        const startCmd = JSON.stringify({ cmd: "serial_ota_start", size: fwBytes.length, baud: otaBaud }) + "\n";
+        await writer.write(new TextEncoder().encode(startCmd));
+        writer.releaseLock();
+
+        // Attende conferma "SMARTY_OTA_SWITCH:921600"
+        reader = port.readable.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        let switchConfirmed = false;
+        const switchDeadline = Date.now() + 2000;
+
+        while (Date.now() < switchDeadline && !switchConfirmed) {
+          const r = await Promise.race([
+            reader.read(),
+            new Promise(res => setTimeout(() => res({ timeout: true }), 250))
+          ]);
+          if (r.timeout) continue;
+          if (r.done) break;
+          if (r.value) {
+            buf += decoder.decode(r.value, { stream: true });
+            if (buf.includes("SMARTY_OTA_SWITCH:")) {
+              switchConfirmed = true;
+              break;
+            }
+          }
+        }
+
+        await reader.cancel();
+        reader.releaseLock();
+        reader = null;
+        await port.close();
+
+        if (!switchConfirmed) {
+          throw new Error("Handshake SMARTY_OTA_SWITCH non ricevuto");
+        }
+
+        await new Promise(r => setTimeout(r, 120));
+
+        // 2. Riapre la porta a 921600 baud e sincronizza il ricevitore FOTA
+        await port.open({ baudRate: otaBaud, bufferSize: 16384 });
+        try { await port.setSignals({ dataTerminalReady: false, requestToSend: false }); } catch (_) {}
+
+        writer = port.writable.getWriter();
+        await writer.write(new TextEncoder().encode("OTA_SYNC\n"));
+        writer.releaseLock();
+
+        reader = port.readable.getReader();
+        buf = "";
+
+        const readLineWithTimeout = async (ms) => {
+          const end = Date.now() + ms;
+          while (Date.now() < end) {
+            const nl = buf.indexOf("\n");
+            if (nl >= 0) {
+              const line = buf.slice(0, nl).trim();
+              buf = buf.slice(nl + 1);
+              return line;
+            }
+            const r = await Promise.race([
+              reader.read(),
+              new Promise(res => setTimeout(() => res({ timeout: true }), 200))
+            ]);
+            if (r.timeout) continue;
+            if (r.done) return null;
+            if (r.value) buf += decoder.decode(r.value, { stream: true });
+          }
+          return null;
+        };
+
+        let ready = false;
+        const readyDeadline = Date.now() + 2500;
+        while (Date.now() < readyDeadline) {
+          const line = await readLineWithTimeout(400);
+          if (!line) continue;
+          logLine(`[Smarty USB FOTA] ${line}`);
+          if (line.includes("SMARTY_OTA_READY")) {
+            ready = true;
+            break;
+          }
+          if (line.includes("OTA_ERR")) {
+            throw new Error(line);
+          }
+        }
+
+        if (!ready) {
+          throw new Error("Timeout in attesa di SMARTY_OTA_READY");
+        }
+
+        logLine(`[Smarty USB FOTA] Barra di progresso attivata sulla matrice LED 23x5 del dispositivo.`);
+        updateProgress(`Invio FOTA USB v${targetVer} al dispositivo...`, 12);
+
+        // 3. Invia il firmware a blocchi di 2048 byte con header [0xA5, 0x5A, len_lo, len_hi, crc_lo, crc_hi]
+        const chunkSize = 2048;
+        let offset = 0;
+        let retries = 0;
+
+        while (offset < fwBytes.length) {
+          const end = Math.min(offset + chunkSize, fwBytes.length);
+          const slice = fwBytes.subarray(offset, end);
+          const len = slice.length;
+          const crc = computeCrc16Ccitt(slice);
+
+          const packet = new Uint8Array(6 + len);
+          packet[0] = 0xA5;
+          packet[1] = 0x5A;
+          packet[2] = len & 0xFF;
+          packet[3] = (len >> 8) & 0xFF;
+          packet[4] = crc & 0xFF;
+          packet[5] = (crc >> 8) & 0xFF;
+          packet.set(slice, 6);
+
+          writer = port.writable.getWriter();
+          await writer.write(packet);
+          writer.releaseLock();
+
+          const respLine = await readLineWithTimeout(3000);
+          if (!respLine) {
+            throw new Error(`Timeout ACK al byte ${offset}`);
+          }
+
+          if (respLine.startsWith("ACK:")) {
+            offset = end;
+            retries = 0;
+            const devPct = parseInt(respLine.slice(4), 10) || Math.round((offset * 100) / fwBytes.length);
+            const uiPct = 12 + Math.round((offset / fwBytes.length) * 86);
+            updateProgress(`FOTA USB su Matrice LED (${devPct}%)...`, uiPct);
+          } else if (respLine === "NAK") {
+            retries++;
+            logLine(`[Smarty USB FOTA] Ritrasmissione blocco @ ${offset} (tentativo ${retries}/4)...`);
+            if (retries > 4) throw new Error("Troppi errori CRC sulla linea seriale");
+          } else if (respLine.startsWith("OTA_ERR")) {
+            throw new Error(respLine);
+          }
+        }
+
+        // Attende conferma finale OTA_OK e riavvio automatico
+        const finalLine = await readLineWithTimeout(3000);
+        if (finalLine) logLine(`[Smarty USB FOTA] ${finalLine}`);
+
+        await reader.cancel();
+        reader.releaseLock();
+        reader = null;
+        await port.close();
+
+        updateProgress("Aggiornamento FOTA USB completato! Riavvio di Smarty...", 100);
+        setStatus(
+          "success",
+          `Firmware v${targetVer} installato tramite procedura nativa FOTA USB! La barra LED su Smarty ha raggiunto il 100% e il dispositivo si sta riavviando.`
+        );
+        return true;
+      } catch (err) {
+        logLine(`[Smarty USB FOTA] Avviso: ${err.message || err}`);
+        if (reader) {
+          try { await reader.cancel(); reader.releaseLock(); } catch (_) {}
+        }
+        try { await port.close(); } catch (_) {}
+        return false;
+      }
+    }
+
+    /**
+     * Procedura B (Fallback / Firmware < v1.5.0): Programmazione Classica con esptool-js
+     * senza cancellare la partizione NVS (eraseAll: false).
+     */
+    async function runClassicEsptoolFlash(port) {
+      let transport = null;
+      try {
+        modeBadgeEl.textContent = "Modalità: Bootloader esptool-js (No Erase)";
+        updateProgress("Connessione Bootloader ESP32-S3 (esptool-js)...", 4);
 
         transport = new Transport(port, true);
         const esploader = new ESPLoader({
@@ -559,22 +789,27 @@
         });
 
         const chipName = await esploader.main();
-        logLine(`Chip rilevato: ${chipName}`);
+        logLine(`Chip rilevato in bootloader: ${chipName}`);
 
         const parts = manifestData.builds[0].parts;
         const fileArray = [];
         for (let i = 0; i < parts.length; i++) {
           const p = parts[i];
-          updateProgress(`Download ${p.path}...`, 5 + Math.round((i / parts.length) * 10));
+          updateProgress(`Download ${p.path}...`, 6 + Math.round((i / parts.length) * 9));
           logLine(`Download ${p.path} (offset 0x${p.offset.toString(16)})...`);
-          const bstr = await fetchBinaryAsBstr(p.path, esploader);
-          fileArray.push({ data: bstr, address: p.offset });
+          const res = await fetch(`${p.path}?cb=${Date.now()}`, { cache: "no-store" });
+          if (!res.ok) throw new Error(`Impossibile scaricare ${p.path} (HTTP ${res.status})`);
+          const buf = await res.arrayBuffer();
+          fileArray.push({
+            data: esploader.ui8ToBstr(new Uint8Array(buf)),
+            address: p.offset
+          });
         }
 
         const totalLengths = fileArray.map(f => f.data.length);
         const grandTotal = totalLengths.reduce((acc, v) => acc + v, 0);
 
-        updateProgress("Scrittura firmware su ESP32-S3...", 15);
+        updateProgress("Scrittura partizioni su ESP32-S3...", 15);
         await esploader.writeFlash({
           fileArray,
           flashSize: "keep",
@@ -605,16 +840,80 @@
         updateProgress("Installazione completata!", 100);
         setStatus(
           "success",
-          `Firmware v${manifestData.version} installato con successo! La memoria NVS non è stata cancellata e Smarty si sta riavviando.`
+          `Firmware v${manifestData.version} installato con successo tramite esptool-js! La memoria NVS è stata preservata e Smarty è ora abilitato al FOTA USB nativo per i prossimi aggiornamenti.`
         );
+      } finally {
+        if (transport) {
+          try { await transport.disconnect(); } catch (_) {}
+        }
+      }
+    }
+
+    // Disconnette eventuale sessione diagnostica prima del flash
+    let diagPort = null;
+    let diagReader = null;
+    let diagTimer = null;
+
+    async function closeUsbDiagnostics() {
+      if (diagTimer) { clearInterval(diagTimer); diagTimer = null; }
+      if (diagReader) {
+        try { await diagReader.cancel(); } catch (_) {}
+        diagReader = null;
+      }
+      if (diagPort) {
+        try { await diagPort.close(); } catch (_) {}
+        diagPort = null;
+      }
+      document.getElementById("usbDiagBtn").textContent = "Connetti Telemetria USB";
+    }
+
+    flashBtn.addEventListener("click", async () => {
+      if (!manifestData || !manifestData.builds || !manifestData.builds[0]) return;
+      await closeUsbDiagnostics();
+
+      let port = null;
+      try {
+        setStatus(null, "");
+        port = await navigator.serial.requestPort();
+
+        flashBtn.disabled = true;
+        espLoaderTerminal.clean();
+        updateProgress("Controllo versione firmware installata su Smarty...", 2);
+        logLine("[WebFlasher] Interrogazione versione installata a 9600 baud...");
+
+        const devInfo = await probeDeviceVersion(port);
+        const supportsSerialOta = devInfo && (devInfo.serial_ota === true || isVersionAtLeast(devInfo.fw, 1, 5, 0));
+
+        if (devInfo) {
+          logLine(`[WebFlasher] Rilevato ${devInfo.hw_id} con firmware v${devInfo.fw} (partizione: ${devInfo.ota_part}).`);
+        } else {
+          logLine("[WebFlasher] Nessuna telemetria FOTA USB rilevata (firmware antecedente o dispositivo non inizializzato).");
+        }
+
+        if (supportsSerialOta) {
+          modeBadgeEl.textContent = `Modalità: FOTA USB Nativo (da v${devInfo.fw} -> v${manifestData.version})`;
+          logLine(`[WebFlasher] Firmware >= v1.5.0 rilevato: avvio procedura FOTA nativa via USB!`);
+          updateProgress("Download firmware.bin per FOTA USB...", 6);
+
+          const fwRes = await fetch(`firmware.bin?cb=${Date.now()}`, { cache: "no-store" });
+          if (!fwRes.ok) throw new Error(`Impossibile scaricare firmware.bin (HTTP ${fwRes.status})`);
+          const fwBytes = new Uint8Array(await fwRes.arrayBuffer());
+
+          const fotaOk = await runNativeUsbFota(port, fwBytes, manifestData.version);
+          if (!fotaOk) {
+            logLine("[WebFlasher] Passaggio automatico al Flashing Classico esptool-js di backup...");
+            await runClassicEsptoolFlash(port);
+          }
+        } else {
+          const reason = devInfo ? `versione v${devInfo.fw} < v1.5.0` : "assenza supporto FOTA USB";
+          logLine(`[WebFlasher] Rilevata ${reason}: eseguo il Flashing Classico tramite esptool-js...`);
+          await runClassicEsptoolFlash(port);
+        }
       } catch (err) {
         consoleDetails.open = true;
         renderIdleBitmap(true);
         logLine(`ERRORE: ${err.message || err}`);
         setStatus("error", `Installazione interrotta: ${err.message || err}`);
-        if (transport) {
-          try { await transport.disconnect(); } catch (_) {}
-        }
       } finally {
         flashBtn.disabled = false;
       }
