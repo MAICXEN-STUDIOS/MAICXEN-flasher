@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Fleet Admin — MAICXEN STUDIOS</title>
+  <title>Smarty Fleet Control (Supabase RBAC) — MAICXEN STUDIOS</title>
   <style>
     :root {
       --bg: #080b11;
       --surface: #0f1520;
       --surface-2: #151d2c;
       --border: rgba(255, 255, 255, 0.08);
-      --border-focus: rgba(6, 182, 212, 0.45);
       --text: #f1f5f9;
       --muted: #8b9bb4;
       --green: #10b981;
       --cyan: #06b6d4;
       --amber: #f59e0b;
       --red: #ef4444;
+      --purple: #a855f7;
       --radius: 14px;
     }
 
@@ -29,7 +29,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Admin Auth Gate */
+    /* Auth Gate (Login / SignUp / Password Reset) */
     .auth-overlay {
       position: fixed;
       inset: 0;
@@ -43,12 +43,12 @@
 
     .auth-card {
       width: 100%;
-      max-width: 380px;
+      max-width: 410px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 28px 24px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
       text-align: center;
     }
 
@@ -60,6 +60,31 @@
       text-transform: uppercase;
       color: var(--cyan);
       margin-bottom: 8px;
+    }
+
+    .auth-mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      background: #070a10;
+      padding: 4px;
+      border-radius: 10px;
+      margin: 14px 0 18px;
+      border: 1px solid var(--border);
+    }
+    .auth-mode-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+    .auth-mode-tab.active {
+      background: var(--surface-2);
+      color: #38bdf8;
     }
 
     input, select {
@@ -89,14 +114,14 @@
       justify-content: center;
       gap: 6px;
     }
-    button:hover { background: #1e293b; border-color: rgba(255,255,255,0.16); }
+    button:hover:not(:disabled) { background: #1e293b; border-color: rgba(255,255,255,0.16); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
     button.btn-primary {
       background: var(--green);
       color: #03150e;
       border-color: transparent;
       font-weight: 700;
     }
-    button.btn-primary:hover { opacity: 0.92; }
     button.btn-cyan {
       background: rgba(6, 182, 212, 0.15);
       color: #38bdf8;
@@ -111,7 +136,7 @@
     /* Minimal App Shell */
     .app-shell {
       display: none;
-      max-width: 1120px;
+      max-width: 1140px;
       margin: 0 auto;
       padding: 20px 18px 48px;
     }
@@ -127,8 +152,8 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .brand-block h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; }
-    .brand-block span { font-size: 12px; color: var(--muted); }
+    .brand-block h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+    .brand-block span.sub { font-size: 12px; color: var(--muted); }
 
     .nav-tabs {
       display: flex;
@@ -137,13 +162,14 @@
       padding: 4px;
       border-radius: 11px;
       border: 1px solid var(--border);
+      flex-wrap: wrap;
     }
 
     .nav-tab {
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 7px 13px;
+      padding: 7px 12px;
       border-radius: 8px;
       font-size: 12.5px;
       font-weight: 600;
@@ -178,11 +204,9 @@
     .kpi-mini .lbl { font-size: 11.5px; color: var(--muted); }
     .kpi-mini .num { font-size: 20px; font-weight: 800; }
 
-    /* Sections */
     .section-view { display: none; }
     .section-view.active { display: block; }
 
-    /* Minimal Filter Bar */
     .filter-bar {
       display: flex;
       justify-content: space-between;
@@ -237,11 +261,13 @@
       border-radius: 999px;
       border: 1px solid transparent;
       white-space: nowrap;
+      text-transform: uppercase;
     }
     .pill.green { background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
     .pill.amber { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
     .pill.cyan { background: rgba(6, 182, 212, 0.14); color: #38bdf8; border-color: rgba(6, 182, 212, 0.3); }
-    .pill.muted { background: rgba(255, 255, 255, 0.05); color: var(--muted); }
+    .pill.purple { background: rgba(168, 85, 247, 0.16); color: #c084fc; border-color: rgba(168, 85, 247, 0.35); }
+    .pill.red { background: rgba(239, 68, 68, 0.14); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
 
     .mc-status-row {
       display: flex;
@@ -271,7 +297,6 @@
       gap: 8px;
     }
 
-    /* Sub-section Panels */
     .panel-box {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -283,7 +308,7 @@
     .panel-box p { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
 
     .events-log {
-      max-height: 420px;
+      max-height: 400px;
       overflow-y: auto;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 12px;
@@ -294,7 +319,21 @@
     }
     .log-entry { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
-    /* POP-UP MODAL (Device Details, Telemetry & Remote Controls) */
+    /* Users Table */
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .users-table th, .users-table td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .users-table th { font-size: 11px; text-transform: uppercase; color: var(--muted); }
+
+    /* POP-UP MODAL */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -398,37 +437,65 @@
 </head>
 <body>
 
-  <!-- ADMIN LOGIN SCREEN -->
+  <!-- SUPABASE AUTH GATE (LOGIN / SIGN UP / PASSWORD RESET) -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
-      <span class="vendor-tag">MAICXEN STUDIOS &bull; ADMIN</span>
-      <h2 style="font-size:20px; margin-bottom:6px;">Smarty Fleet Control</h2>
-      <p style="font-size:12.5px; color:var(--muted); margin-bottom:18px;">
-        Inserisci la password amministratore per accedere ai dispositivi.
+      <span class="vendor-tag">MAICXEN STUDIOS &bull; SUPABASE AUTH</span>
+      <h2 style="font-size:20px; margin-bottom:4px;">Smarty Fleet Control</h2>
+      <p style="font-size:12.5px; color:var(--muted);">
+        Accesso multi-utente con gerarchia ruoli (<strong>Admin</strong>, <strong>Editor</strong>, <strong>Viewer</strong>) e protezione Row-Level Security.
       </p>
-      <form onsubmit="handleAdminLogin(event)" style="display:flex; flex-direction:column; gap:10px;">
-        <input type="password" id="adminPassInput" placeholder="Password Admin..." required autocomplete="current-password" />
-        <button type="submit" class="btn-primary" style="padding:11px;">Sblocca Dashboard</button>
+
+      <div class="auth-mode-tabs" id="authTabs">
+        <button class="auth-mode-tab active" onclick="setAuthMode('login', this)">Accedi</button>
+        <button class="auth-mode-tab" onclick="setAuthMode('signup', this)">Registrati</button>
+        <button class="auth-mode-tab" onclick="setAuthMode('reset', this)">Recupera</button>
+      </div>
+
+      <form onsubmit="handleAuthSubmit(event)" style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+        <div id="nameFieldWrap" style="display:none; flex-direction:column; gap:4px;">
+          <label style="font-size:11.5px; color:var(--muted);">Nome Completo</label>
+          <input type="text" id="authName" placeholder="Es. Emanuele" />
+        </div>
+
+        <div id="emailFieldWrap" style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11.5px; color:var(--muted);">Email</label>
+          <input type="email" id="authEmail" placeholder="nome@dominio.it" required autocomplete="email" />
+        </div>
+
+        <div id="passFieldWrap" style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11.5px; color:var(--muted);" id="passFieldLabel">Password</label>
+          <input type="password" id="authPass" placeholder="••••••••" minlength="6" autocomplete="current-password" />
+        </div>
+
+        <button type="submit" class="btn-primary" id="authSubmitBtn" style="padding:11px; margin-top:4px;">
+          Accedi alla Dashboard
+        </button>
       </form>
-      <p id="authError" style="color:var(--red); font-size:12px; margin-top:10px; display:none;">
-        Password errata.
-      </p>
+
+      <p id="authFeedback" style="font-size:12.5px; margin-top:12px; display:none;"></p>
     </div>
   </div>
 
-  <!-- MINIMAL ADMIN DASHBOARD -->
+  <!-- MINIMAL ADMIN / EDITOR / VIEWER DASHBOARD -->
   <div class="app-shell" id="appWrap">
     <nav class="navbar">
       <div class="brand-block">
-        <h1>Smarty Fleet <span class="pill green" id="streamStatusPill" style="margin-left:6px;">LIVE</span></h1>
-        <span id="latestFwPill">Release Ufficiale: v1.5.0</span>
+        <h1>
+          Smarty Fleet
+          <span class="pill green" id="streamStatusPill">LIVE</span>
+          <span class="pill purple" id="userRoleBadge">VIEWER</span>
+        </h1>
+        <span class="sub" id="userEmailSub">--</span> &bull;
+        <span class="sub" id="latestFwPill">Release Ufficiale: v1.5.0</span>
       </div>
 
       <div class="nav-tabs">
         <button class="nav-tab active" onclick="switchSection('devices', this)">Dispositivi</button>
-        <button class="nav-tab" onclick="switchSection('actions', this)">Comandi Globali &amp; LAN</button>
+        <button class="nav-tab" id="navActionsBtn" onclick="switchSection('actions', this)">Comandi Globali &amp; LAN</button>
         <button class="nav-tab" onclick="switchSection('logs', this)">Log Eventi</button>
-        <button class="nav-tab" onclick="switchSection('settings', this)">Impostazioni</button>
+        <button class="nav-tab" id="navUsersBtn" style="display:none;" onclick="switchSection('users', this)">Utenti &amp; Ruoli</button>
+        <button class="nav-tab" onclick="switchSection('settings', this)">Profilo &amp; Backup</button>
       </div>
     </nav>
 
@@ -444,7 +511,7 @@
     <section class="section-view active" id="sec-devices">
       <div class="filter-bar">
         <input type="text" id="searchFilter" placeholder="Cerca dispositivo (nome, ID, IP)..." oninput="renderFleet()" style="width:260px;" />
-        <button onclick="pollHistoricalTelemetry()">Aggiorna Stato</button>
+        <button onclick="syncWithCloudAndDb()">Sincronizza Ora</button>
       </div>
       <div class="fleet-grid" id="devicesGrid"></div>
     </section>
@@ -453,13 +520,13 @@
     <section class="section-view" id="sec-actions">
       <div class="panel-box">
         <h3>Broadcast a Tutta la Flotta</h3>
-        <p>Invia un messaggio scorrevole o un comando simultaneo a tutti gli Smarty registrati (sia locali sia remoti).</p>
+        <p>Invia un messaggio scorrevole o un comando simultaneo a tutti gli Smarty registrati (richiede ruolo <strong>Editor</strong> o <strong>Admin</strong>).</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <input type="text" id="broadcastScrollTxt" placeholder="Testo scorrevole da inviare a tutti..." style="flex:1; min-width:200px;" />
-          <button class="btn-primary" onclick="broadcastScroll()">Invia Testo a Tutti</button>
-          <button onclick="broadcastCommand({power:1})">Accendi Tutti</button>
-          <button onclick="broadcastCommand({power:0})">Spegni Tutti</button>
-          <button class="btn-cyan" onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA)</button>
+          <button class="btn-primary role-editor" onclick="broadcastScroll()">Invia Testo a Tutti</button>
+          <button class="role-editor" onclick="broadcastCommand({power:1})">Accendi Tutti</button>
+          <button class="role-editor" onclick="broadcastCommand({power:0})">Spegni Tutti</button>
+          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA - Solo Admin)</button>
         </div>
       </div>
 
@@ -478,31 +545,76 @@
       <div class="panel-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <div>
-            <h3>Registro Cronologico Eventi</h3>
-            <p style="margin-bottom:0;">Storico di accensioni, spegnimenti, riavvii e comandi remoti.</p>
+            <h3>Registro Cronologico Eventi Cloud (Supabase)</h3>
+            <p style="margin-bottom:0;">Storico condiviso di accensioni, spegnimenti, riavvii e comandi eseguiti.</p>
           </div>
-          <button onclick="clearEventLog()">Svuota Log</button>
+          <button class="role-admin" onclick="clearEventLog()">Svuota Log (Admin)</button>
         </div>
         <div class="events-log" id="eventsLog"></div>
       </div>
     </section>
 
-    <!-- SEZIONE 4: IMPOSTAZIONI & BACKUP -->
-    <section class="section-view" id="sec-settings">
+    <!-- SEZIONE 4: GESTIONE UTENTI E GERARCHIA RUOLI (SOLO ADMIN) -->
+    <section class="section-view" id="sec-users">
       <div class="panel-box">
-        <h3>Backup &amp; Ripristino Registro Dispositivi</h3>
-        <p>Esporta o importa l'elenco dei dispositivi registrati e lo storico eventi in formato JSON.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-cyan" onclick="exportRegistry()">Esporta Backup JSON</button>
-          <button onclick="document.getElementById('importFile').click()">Importa Backup JSON</button>
-          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+        <h3>Pre-Autorizza / Assegna Ruolo per Email</h3>
+        <p>Pre-imposta il ruolo (<strong>Admin</strong>, <strong>Editor</strong> o <strong>Viewer</strong>) per un indirizzo email prima o dopo la registrazione.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="email" id="inviteEmailInput" placeholder="email@esempio.it" style="width:260px;" />
+          <select id="inviteRoleSelect">
+            <option value="viewer">Viewer (Sola Lettura)</option>
+            <option value="editor">Editor (Controllo Luci &amp; Testi)</option>
+            <option value="admin">Admin (Controllo Totale &amp; Utenti)</option>
+          </select>
+          <button class="btn-primary" onclick="assignRoleByEmail()">Salva Ruolo Email</button>
         </div>
       </div>
 
       <div class="panel-box">
-        <h3>Sicurezza Sessione Admin</h3>
-        <p>Termina la sessione corrente e blocca l'accesso alla dashboard.</p>
-        <button class="btn-danger" onclick="logoutAdmin()">Blocca ed Esci dalla Dashboard</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3>Account Registrati e Gerarchia Permessi</h3>
+            <p style="margin-bottom:0;">Modifica in tempo reale il livello di accesso o sospendi un utente.</p>
+          </div>
+          <button onclick="loadUsersList()">Aggiorna Lista</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Utente / Email</th>
+                <th>Ruolo Attuale</th>
+                <th>Stato</th>
+                <th>Registrato il</th>
+                <th>Azioni Admin</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEZIONE 5: PROFILO, CAMBIO PASSWORD & BACKUP -->
+    <section class="section-view" id="sec-settings">
+      <div class="panel-box">
+        <h3>Il Tuo Profilo &amp; Cambio Password</h3>
+        <p id="profileSummaryText">Autenticato tramite Supabase Auth.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="password" id="newPassInput" placeholder="Nuova password (min. 6 caratteri)..." minlength="6" style="width:260px;" />
+          <button class="btn-primary" onclick="updateMyPassword()">Aggiorna Password</button>
+          <button class="btn-danger" onclick="logoutUser()">Disconnetti Account</button>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <h3>Backup &amp; Ripristino Registro JSON</h3>
+        <p>Esporta una copia locale di tutti i dispositivi o importa un backup JSON nel database Supabase.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn-cyan" onclick="exportRegistry()">Esporta Backup JSON</button>
+          <button class="role-admin" onclick="document.getElementById('importFile').click()">Importa Backup JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+        </div>
       </div>
     </section>
   </div>
@@ -514,7 +626,7 @@
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
             <h2 id="mTitle" style="font-size:18px; font-weight:800;">Smarty</h2>
-            <button onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rinomina</button>
+            <button class="role-editor" onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rinomina</button>
           </div>
           <div id="mSubtitle" style="font-size:12px; color:var(--muted); margin-top:3px;">ID: --</div>
         </div>
@@ -534,19 +646,23 @@
 
       <!-- MODAL TAB 1: CONTROLLI & EFFETTI -->
       <div class="modal-pane active" id="mpane-ctrl">
+        <div id="viewerNotice" style="display:none; margin-bottom:12px; padding:9px 12px; border-radius:8px; background:rgba(245,158,11,0.12); color:#fcd34d; font-size:12px;">
+          Il tuo account ha ruolo <strong>Viewer (Sola Lettura)</strong>: i controlli remoti sono disabilitati.
+        </div>
+
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-          <button id="mPwrBtn" class="btn-primary" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">ACCENDI / SPEGNI</button>
-          <input type="color" id="mColorPicker" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="Colore RGB" />
+          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">ACCENDI / SPEGNI</button>
+          <input type="color" id="mColorPicker" class="role-editor" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="Colore RGB" />
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
           <div class="detail-cell">
             <span>Luminosità (<strong id="mBrightLbl">100%</strong>)</span>
-            <input type="range" id="mBrightSlider" min="0" max="100" value="100" style="width:100%; margin-top:6px;" oninput="document.getElementById('mBrightLbl').textContent=this.value+'%'" onchange="sendModalCmd({brightness:Number(this.value)})" />
+            <input type="range" id="mBrightSlider" class="role-editor" min="0" max="100" value="100" style="width:100%; margin-top:6px;" oninput="document.getElementById('mBrightLbl').textContent=this.value+'%'" onchange="sendModalCmd({brightness:Number(this.value)})" />
           </div>
           <div class="detail-cell">
             <span>Velocità (<strong id="mSpeedLbl">75%</strong>)</span>
-            <input type="range" id="mSpeedSlider" min="1" max="100" value="75" style="width:100%; margin-top:6px;" oninput="document.getElementById('mSpeedLbl').textContent=this.value+'%'" onchange="sendModalCmd({speed:Number(this.value)})" />
+            <input type="range" id="mSpeedSlider" class="role-editor" min="1" max="100" value="75" style="width:100%; margin-top:6px;" oninput="document.getElementById('mSpeedLbl').textContent=this.value+'%'" onchange="sendModalCmd({speed:Number(this.value)})" />
           </div>
         </div>
 
@@ -556,8 +672,8 @@
         </div>
 
         <div style="display:flex; gap:8px;">
-          <input type="text" id="mScrollInput" placeholder="Invia testo scorrevole personalizzato..." style="flex:1;" />
-          <button class="btn-cyan" onclick="sendModalScroll()">Invia Testo</button>
+          <input type="text" id="mScrollInput" class="role-editor" placeholder="Invia testo scorrevole personalizzato..." style="flex:1;" />
+          <button class="btn-cyan role-editor" onclick="sendModalScroll()">Invia Testo</button>
         </div>
       </div>
 
@@ -570,23 +686,31 @@
       <div class="modal-pane" id="mpane-sys">
         <div class="detail-grid" id="mSysGrid" style="margin-bottom:16px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--border);">
-          <button class="btn-cyan" onclick="sendModalCmd({action:'fota_check'})">Controlla FOTA</button>
-          <button class="btn-primary" onclick="sendModalCmd({action:'fota_update'})">Forza Aggiornamento FOTA</button>
-          <button onclick="sendModalCmd({action:'reboot'})">Riavvia Dispositivo</button>
-          <button class="btn-danger" style="margin-left:auto;" onclick="removeCurrentDevice()">Rimuovi dal Registro</button>
+          <button class="btn-cyan role-admin" onclick="sendModalCmd({action:'fota_check'})">Controlla FOTA (Admin)</button>
+          <button class="btn-primary role-admin" onclick="sendModalCmd({action:'fota_update'})">Forza Aggiornamento FOTA (Admin)</button>
+          <button class="role-admin" onclick="sendModalCmd({action:'reboot'})">Riavvia (Admin)</button>
+          <button class="btn-danger role-admin" style="margin-left:auto;" onclick="removeCurrentDevice()">Rimuovi (Admin)</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    const DEFAULT_ADMIN_HASH = "8c90f679486504b8e729a59057a1a8a3818b27988635d9354586a076253c749e";
-    const RELAY_HOST = "https://ntfy.sh";
-    const FLEET_TOPIC = "maicxen_smarty_fleet_v1_7f9a2c8e4b1d";
-    const CMD_PREFIX = "maicxen_smarty_cmd_v1_";
-    const REGISTRY_STORAGE_KEY = "maicxen_smarty_fleet_registry_v1";
-    const LOG_STORAGE_KEY = "maicxen_smarty_fleet_logs_v1";
-    const MODES = ["Start", "Orario", "Light", "Cuore", "Rainbow", "Game", "Ti_amo", "Love_u", "Ema", "Sofi", "Cuori", "WIFI"];
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/+esm";
+
+    const SUPABASE_URL = "https://fuhuykcbapcdwtrwpccy.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1aHV5a2NiYXBjZHd0cndwY2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5NTIyODgsImV4cCI6MjExMDUyODI4OH0.Oj9qHs5l3YSy5NAjwLpzKCQaJNJ75a4dMaJl7RNtbgE";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Configurazione segreta caricata dinamicamente da public.fleet_config (protetta da RLS in base al ruolo!)
+    let relayHost = "https://ntfy.sh";
+    let fleetTopic = null;
+    let cmdPrefix = null;
+
+    let currentUser = null;
+    let currentProfile = null; // { id, email, full_name, role: 'admin'|'editor'|'viewer', is_active }
+    let authMode = "login"; // 'login' | 'signup' | 'reset' | 'update_password'
 
     let fleetRegistry = {};
     let eventLogs = [];
@@ -594,10 +718,11 @@
     let sseSource = null;
     let selectedHwId = null;
 
-    // Inizializza pulsanti modalità nel pop-up
+    const MODES = ["Start", "Orario", "Light", "Cuore", "Rainbow", "Game", "Ti_amo", "Love_u", "Ema", "Sofi", "Cuori", "WIFI"];
     const mModesGrid = document.getElementById("mModesGrid");
     MODES.forEach(m => {
       const b = document.createElement("button");
+      b.className = "role-editor";
       b.textContent = m.replace("_", " ");
       b.onclick = () => sendModalCmd({ mode: m });
       mModesGrid.appendChild(b);
@@ -608,6 +733,7 @@
       document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
       document.getElementById("sec-" + secId).classList.add("active");
       btnEl.classList.add("active");
+      if (secId === "users") window.loadUsersList();
     };
 
     window.switchModalTab = function(paneId, btnEl) {
@@ -617,57 +743,288 @@
       btnEl.classList.add("active");
     };
 
-    async function sha256Hex(str) {
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    function showAuthFeedback(msg, isError = false) {
+      const el = document.getElementById("authFeedback");
+      el.style.display = "block";
+      el.style.color = isError ? "var(--red)" : "var(--green)";
+      el.textContent = msg;
     }
 
-    window.handleAdminLogin = async function(e) {
-      e.preventDefault();
-      const pass = document.getElementById("adminPassInput").value;
-      const hash = await sha256Hex(pass);
-      const customHash = localStorage.getItem("maicxen_smarty_admin_hash") || DEFAULT_ADMIN_HASH;
-      if (hash === customHash || pass === "MaicxenSmarty2026!") {
-        sessionStorage.setItem("smarty_admin_auth", "1");
-        document.getElementById("authOverlay").style.display = "none";
-        document.getElementById("appWrap").style.display = "block";
-        initDashboard();
-      } else {
-        document.getElementById("authError").style.display = "block";
+    window.setAuthMode = function(mode, btnEl = null) {
+      authMode = mode;
+      document.getElementById("authFeedback").style.display = "none";
+      if (btnEl) {
+        document.querySelectorAll(".auth-mode-tab").forEach(b => b.classList.remove("active"));
+        btnEl.classList.add("active");
+      }
+      const nameWrap = document.getElementById("nameFieldWrap");
+      const emailWrap = document.getElementById("emailFieldWrap");
+      const passWrap = document.getElementById("passFieldWrap");
+      const passInput = document.getElementById("authPass");
+      const submitBtn = document.getElementById("authSubmitBtn");
+      const passLabel = document.getElementById("passFieldLabel");
+
+      if (mode === "login") {
+        nameWrap.style.display = "none";
+        emailWrap.style.display = "flex";
+        passWrap.style.display = "flex";
+        passInput.required = true;
+        passLabel.textContent = "Password";
+        submitBtn.textContent = "Accedi alla Dashboard";
+      } else if (mode === "signup") {
+        nameWrap.style.display = "flex";
+        emailWrap.style.display = "flex";
+        passWrap.style.display = "flex";
+        passInput.required = true;
+        passLabel.textContent = "Crea Password (min. 6 caratteri)";
+        submitBtn.textContent = "Crea Account (Il 1° utente diventa Admin)";
+      } else if (mode === "reset") {
+        nameWrap.style.display = "none";
+        emailWrap.style.display = "flex";
+        passWrap.style.display = "none";
+        passInput.required = false;
+        submitBtn.textContent = "Invia Email di Ripristino Password";
+      } else if (mode === "update_password") {
+        document.getElementById("authTabs").style.display = "none";
+        nameWrap.style.display = "none";
+        emailWrap.style.display = "none";
+        passWrap.style.display = "flex";
+        passInput.required = true;
+        passLabel.textContent = "Inserisci la Nuova Password";
+        submitBtn.textContent = "Salva Nuova Password";
       }
     };
 
-    window.logoutAdmin = function() {
-      sessionStorage.removeItem("smarty_admin_auth");
+    window.handleAuthSubmit = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPass").value;
+      const fullName = document.getElementById("authName").value.trim();
+      const btn = document.getElementById("authSubmitBtn");
+      btn.disabled = true;
+
+      try {
+        if (authMode === "login") {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        } else if (authMode === "signup") {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { full_name: fullName },
+              emailRedirectTo: window.location.href
+            }
+          });
+          if (error) throw error;
+          if (data.session) {
+            showAuthFeedback("Account creato e autenticato!");
+          } else {
+            showAuthFeedback("Registrazione completata! Controlla la tua casella email per confermare l'indirizzo.");
+          }
+        } else if (authMode === "reset") {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.href
+          });
+          if (error) throw error;
+          showAuthFeedback("Email di ripristino inviata! Clicca sul link ricevuto via email per impostare la nuova password.");
+        } else if (authMode === "update_password") {
+          const { error } = await supabase.auth.updateUser({ password });
+          if (error) throw error;
+          document.getElementById("authTabs").style.display = "grid";
+          showAuthFeedback("Password aggiornata con successo!");
+          await bootAuthenticatedSession();
+        }
+      } catch (err) {
+        showAuthFeedback(err.message || "Errore di autenticazione", true);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.logoutUser = async function() {
       if (sseSource) sseSource.close();
+      await supabase.auth.signOut();
       location.reload();
     };
 
-    function loadSavedData() {
-      try {
-        const raw = localStorage.getItem(REGISTRY_STORAGE_KEY);
-        if (raw) fleetRegistry = JSON.parse(raw);
-      } catch (_) { fleetRegistry = {}; }
-      try {
-        const rawLogs = localStorage.getItem(LOG_STORAGE_KEY);
-        if (rawLogs) eventLogs = JSON.parse(rawLogs);
-      } catch (_) { eventLogs = []; }
+    window.updateMyPassword = async function() {
+      const newPassword = document.getElementById("newPassInput").value;
+      if (!newPassword || newPassword.length < 6) {
+        alert("Inserisci una password di almeno 6 caratteri.");
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        alert("Errore: " + error.message);
+      } else {
+        document.getElementById("newPassInput").value = "";
+        alert("Password aggiornata con successo!");
+      }
+    };
+
+    function applyRolePermissionsUI() {
+      const role = currentProfile?.role || "viewer";
+      const isEditorOrAdmin = (role === "editor" || role === "admin");
+      const isAdmin = (role === "admin");
+
+      const badge = document.getElementById("userRoleBadge");
+      badge.textContent = role.toUpperCase();
+      badge.className = "pill " + (isAdmin ? "purple" : (isEditorOrAdmin ? "cyan" : "amber"));
+
+      document.getElementById("userEmailSub").textContent = currentProfile?.email || "";
+      document.getElementById("profileSummaryText").textContent =
+        `Connesso come ${currentProfile?.email} — Ruolo: ${role.toUpperCase()}`;
+
+      document.getElementById("navUsersBtn").style.display = isAdmin ? "inline-flex" : "none";
+      document.getElementById("viewerNotice").style.display = isEditorOrAdmin ? "none" : "block";
+
+      document.querySelectorAll(".role-editor").forEach(el => {
+        el.disabled = !isEditorOrAdmin;
+      });
+      document.querySelectorAll(".role-admin").forEach(el => {
+        el.disabled = !isAdmin;
+        if (el.tagName === "BUTTON") {
+          el.style.display = isAdmin ? "inline-flex" : "none";
+        }
+      });
     }
 
-    function saveRegistry() {
-      localStorage.setItem(REGISTRY_STORAGE_KEY, JSON.stringify(fleetRegistry));
+    async function bootAuthenticatedSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) {
+        document.getElementById("authOverlay").style.display = "flex";
+        document.getElementById("appWrap").style.display = "none";
+        return;
+      }
+
+      currentUser = session.user;
+
+      // 1. Carica il profilo e il ruolo da public.user_profiles
+      const { data: profile, error: profErr } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (profErr || !profile || !profile.is_active) {
+        showAuthFeedback("Il tuo account è stato disattivato dall'amministratore o non è autorizzato.", true);
+        await supabase.auth.signOut();
+        return;
+      }
+
+      currentProfile = profile;
+
+      // 2. Carica le chiavi di configurazione consentite dal ruolo tramite RLS da public.fleet_config
+      const { data: cfgRows } = await supabase.from("fleet_config").select("config_key, config_value");
+      if (cfgRows) {
+        cfgRows.forEach(r => {
+          if (r.config_key === "relay_host") relayHost = r.config_value;
+          if (r.config_key === "fleet_telemetry_topic") fleetTopic = r.config_value;
+          if (r.config_key === "fleet_cmd_prefix") cmdPrefix = r.config_value;
+        });
+      }
+
+      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("appWrap").style.display = "block";
+
+      applyRolePermissionsUI();
+      await fetchLatestGitHubVersion();
+      await loadDevicesFromSupabase();
+      await loadEventsFromSupabase();
+      await window.pollHistoricalTelemetry();
+      connectRealtimeStream();
     }
 
-    function pushEventLog(hwId, eventType, detail) {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        document.getElementById("authOverlay").style.display = "flex";
+        document.getElementById("appWrap").style.display = "none";
+        window.setAuthMode("update_password");
+      } else if (event === "SIGNED_IN") {
+        bootAuthenticatedSession();
+      }
+    });
+
+    // --- SUPABASE DATABASE SYNC (DEVICES & EVENTS) ---
+    async function loadDevicesFromSupabase() {
+      const { data } = await supabase.from("smarty_devices").select("*").order("last_seen_ms", { ascending: false });
+      if (data) {
+        data.forEach(row => {
+          fleetRegistry[row.hw_id] = row;
+        });
+        renderFleet();
+      }
+    }
+
+    async function upsertDeviceToSupabase(dev) {
+      await supabase.from("smarty_devices").upsert({
+        hw_id: dev.hw_id,
+        alias: dev.alias || dev.hw_id,
+        mac: dev.mac || "",
+        profile: dev.profile || "Smarty_1",
+        sinric_id: dev.sinric_id || "",
+        fw: dev.fw || "",
+        ota_part: dev.ota_part || "app0",
+        serial_ota: Boolean(dev.serial_ota),
+        power: Boolean(dev.power),
+        mode: dev.mode || "Start",
+        brightness: Number(dev.brightness ?? 100),
+        speed: Number(dev.speed ?? 75),
+        hex: dev.hex || "#10b981",
+        temp: Number(dev.temp || 0),
+        heap_free: Number(dev.heap_free || 0),
+        heap_min: Number(dev.heap_min || 0),
+        wifi_ssid: dev.wifi_ssid || "",
+        wifi_ip: dev.wifi_ip || "",
+        rssi: Number(dev.rssi || 0),
+        cloud_online: Boolean(dev.cloud_online),
+        boot_count: Number(dev.boot_count || 0),
+        uptime: Number(dev.uptime || 0),
+        total_on_sec: Number(dev.total_on_sec || 0),
+        last_on_ts: Number(dev.last_on_ts || 0),
+        last_off_ts: Number(dev.last_off_ts || 0),
+        fota_status: dev.fota_status || "Pronto",
+        first_registered_ms: Number(dev.first_registered_ms || Date.now()),
+        last_seen_ms: Number(dev.last_seen_ms || Date.now()),
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    async function loadEventsFromSupabase() {
+      const { data } = await supabase
+        .from("smarty_events")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(120);
+      if (data) {
+        eventLogs = data.map(r => ({
+          time: new Date(r.created_at).toLocaleString("it-IT"),
+          hwId: r.hw_id,
+          eventType: r.event_type,
+          detail: r.detail + (r.actor_email ? ` (${r.actor_email})` : "")
+        }));
+        renderEventLogs();
+      }
+    }
+
+    async function pushEventLog(hwId, eventType, detail) {
+      const actor = currentProfile?.email || "";
       eventLogs.unshift({
         time: new Date().toLocaleString("it-IT"),
         hwId,
         eventType,
-        detail
+        detail: detail + (actor ? ` (${actor})` : "")
       });
-      if (eventLogs.length > 150) eventLogs.length = 150;
-      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(eventLogs));
+      if (eventLogs.length > 120) eventLogs.length = 120;
       renderEventLogs();
+
+      await supabase.from("smarty_events").insert({
+        hw_id: hwId,
+        event_type: eventType,
+        detail,
+        actor_email: actor
+      });
     }
 
     function renderEventLogs() {
@@ -681,13 +1038,14 @@
       ).join("");
     }
 
-    window.clearEventLog = function() {
+    window.clearEventLog = async function() {
+      if (currentProfile?.role !== "admin") return;
+      await supabase.from("smarty_events").delete().gt("id", 0);
       eventLogs = [];
-      localStorage.removeItem(LOG_STORAGE_KEY);
       renderEventLogs();
     };
 
-    function ingestTelemetryPacket(pkt, serverTimestampSec = null) {
+    function ingestTelemetryPacket(pkt, serverTimestampSec = null, persistToDb = true) {
       if (!pkt || !pkt.hw_id) return;
       const id = pkt.hw_id;
       const nowMs = Date.now();
@@ -700,10 +1058,16 @@
         last_seen_ms: 0
       };
 
-      if (seenMs < prev.last_seen_ms) return;
+      if (seenMs < (prev.last_seen_ms || 0)) return;
 
       const prevPower = prev.power;
-      const updated = { ...prev, ...pkt, last_seen_ms: seenMs };
+      const updated = {
+        ...prev,
+        ...pkt,
+        alias: prev.alias || `${pkt.product || "Smarty"} (${id})`,
+        first_registered_ms: prev.first_registered_ms || seenMs,
+        last_seen_ms: seenMs
+      };
 
       if (pkt.event === "power_on" && (!updated.last_on_ts || updated.last_on_ts < 1700000000)) {
         updated.last_on_ts = Math.floor(seenMs / 1000);
@@ -713,9 +1077,11 @@
       }
 
       fleetRegistry[id] = updated;
-      saveRegistry();
+      if (persistToDb) {
+        upsertDeviceToSupabase(updated);
+      }
 
-      if (pkt.event && (pkt.event !== "heartbeat" || prevPower !== pkt.power)) {
+      if (persistToDb && pkt.event && (pkt.event !== "heartbeat" || prevPower !== pkt.power)) {
         pushEventLog(
           id,
           pkt.event.toUpperCase(),
@@ -742,9 +1108,15 @@
       } catch (_) {}
     }
 
+    window.syncWithCloudAndDb = async function() {
+      await loadDevicesFromSupabase();
+      await window.pollHistoricalTelemetry();
+    };
+
     window.pollHistoricalTelemetry = async function() {
+      if (!fleetTopic) return;
       try {
-        const res = await fetch(`${RELAY_HOST}/${FLEET_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
+        const res = await fetch(`${relayHost}/${fleetTopic}/json?poll=1&since=all`, { cache: "no-store" });
         if (!res.ok) return;
         const text = await res.text();
         for (const line of text.split("\n")) {
@@ -752,7 +1124,7 @@
           try {
             const env = JSON.parse(line);
             if (env.event === "message" && env.message) {
-              ingestTelemetryPacket(JSON.parse(env.message), env.time);
+              ingestTelemetryPacket(JSON.parse(env.message), env.time, true);
             }
           } catch (_) {}
         }
@@ -761,8 +1133,9 @@
     };
 
     function connectRealtimeStream() {
+      if (!fleetTopic) return;
       if (sseSource) sseSource.close();
-      sseSource = new EventSource(`${RELAY_HOST}/${FLEET_TOPIC}/sse`);
+      sseSource = new EventSource(`${relayHost}/${fleetTopic}/sse`);
       const pill = document.getElementById("streamStatusPill");
       sseSource.onopen = () => { pill.textContent = "LIVE"; pill.className = "pill green"; };
       sseSource.onmessage = (ev) => {
@@ -770,7 +1143,7 @@
           const data = JSON.parse(ev.data);
           const msgStr = data.message || ev.data;
           const pkt = typeof msgStr === "string" ? JSON.parse(msgStr) : msgStr;
-          ingestTelemetryPacket(pkt, data.time);
+          ingestTelemetryPacket(pkt, data.time, true);
         } catch (_) {}
       };
       sseSource.onerror = () => { pill.textContent = "SYNC..."; pill.className = "pill amber"; };
@@ -783,7 +1156,7 @@
         const res = await fetch(`http://${ip}/api/status`, { cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const pkt = await res.json();
-        ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000));
+        ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000), true);
         openDeviceModal(pkt.hw_id);
       } catch (err) {
         alert(`Impossibile contattare http://${ip}/api/status`);
@@ -792,13 +1165,23 @@
 
     window.sendDeviceCommand = async function(hwId, cmdObj, ev = null) {
       if (ev) ev.stopPropagation();
+      const role = currentProfile?.role || "viewer";
+      if (role === "viewer" || !cmdPrefix) {
+        alert("Accesso negato: il ruolo Viewer è di sola lettura.");
+        return;
+      }
+      if (cmdObj.action && role !== "admin") {
+        alert("Accesso negato: solo un Admin può eseguire azioni di sistema (FOTA / Riavvio).");
+        return;
+      }
+
       const dev = fleetRegistry[hwId];
       try {
-        await fetch(`${RELAY_HOST}/${CMD_PREFIX}${hwId}`, {
+        await fetch(`${relayHost}/${cmdPrefix}${hwId}`, {
           method: "POST",
           body: JSON.stringify(cmdObj)
         });
-        pushEventLog(hwId, "ADMIN_CMD", JSON.stringify(cmdObj));
+        pushEventLog(hwId, "REMOTE_CMD", JSON.stringify(cmdObj));
       } catch (_) {}
 
       if (dev && dev.wifi_ip && dev.wifi_ip !== "0.0.0.0") {
@@ -811,7 +1194,7 @@
         if (cmdObj.hex !== undefined) params.set("hex", cmdObj.hex);
         if ([...params.keys()].length > 0) {
           fetch(`http://${dev.wifi_ip}/api/set?${params.toString()}`).then(r => r.json()).then(pkt => {
-            ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000));
+            ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000), true);
           }).catch(() => {});
         }
       }
@@ -826,6 +1209,101 @@
     window.broadcastScroll = function() {
       const txt = document.getElementById("broadcastScrollTxt").value.trim();
       if (txt) window.broadcastCommand({ scroll: txt });
+    };
+
+    // --- GESTIONE UTENTI E RUOLI (ADMIN ONLY) ---
+    window.loadUsersList = async function() {
+      if (currentProfile?.role !== "admin") return;
+      const { data: users } = await supabase.from("user_profiles").select("*").order("created_at", { ascending: true });
+      const { data: invites } = await supabase.from("role_invites").select("*").order("created_at", { ascending: false });
+
+      const tbody = document.getElementById("usersTableBody");
+      let html = "";
+
+      if (users) {
+        html += users.map(u => `
+          <tr>
+            <td><strong>${u.full_name || "Utente"}</strong><br><span style="color:var(--muted);font-size:11.5px;">${u.email}</span></td>
+            <td>
+              <select onchange="changeUserRole('${u.id}', this.value)" ${u.id === currentUser.id ? "disabled" : ""}>
+                <option value="viewer" ${u.role === "viewer" ? "selected" : ""}>Viewer</option>
+                <option value="editor" ${u.role === "editor" ? "selected" : ""}>Editor</option>
+                <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
+              </select>
+            </td>
+            <td><span class="pill ${u.is_active ? "green" : "red"}">${u.is_active ? "Attivo" : "Sospeso"}</span></td>
+            <td>${new Date(u.created_at).toLocaleDateString("it-IT")}</td>
+            <td>
+              ${u.id !== currentUser.id ? `
+                <button onclick="toggleUserActive('${u.id}', ${!u.is_active})">${u.is_active ? "Sospendi" : "Riattiva"}</button>
+              ` : `<span style="color:var(--muted);font-size:11.5px;">Tu (Admin)</span>`}
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      if (invites && invites.length > 0) {
+        html += invites.map(inv => `
+          <tr>
+            <td><em>${inv.email}</em><br><span style="color:var(--amber);font-size:11px;">In attesa di registrazione</span></td>
+            <td><span class="pill cyan">${inv.role}</span></td>
+            <td><span class="pill amber">Pre-autorizzato</span></td>
+            <td>${new Date(inv.created_at).toLocaleDateString("it-IT")}</td>
+            <td><button class="btn-danger" onclick="deleteRoleInvite('${inv.email}')">Revoca</button></td>
+          </tr>
+        `).join("");
+      }
+
+      tbody.innerHTML = html || "<tr><td colspan='5' style='color:var(--muted)'>Nessun utente trovato.</td></tr>";
+    };
+
+    window.changeUserRole = async function(userId, newRole) {
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ role: newRole, updated_at: new Date().toISOString() })
+        .eq("id", userId);
+      if (error) alert("Errore: " + error.message);
+      else window.loadUsersList();
+    };
+
+    window.toggleUserActive = async function(userId, activeState) {
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ is_active: activeState, updated_at: new Date().toISOString() })
+        .eq("id", userId);
+      if (error) alert("Errore: " + error.message);
+      else window.loadUsersList();
+    };
+
+    window.assignRoleByEmail = async function() {
+      const email = document.getElementById("inviteEmailInput").value.trim().toLowerCase();
+      const role = document.getElementById("inviteRoleSelect").value;
+      if (!email) return;
+
+      // Controlla se l'utente è già registrato in user_profiles
+      const { data: existing } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .ilike("email", email)
+        .maybeSingle();
+
+      if (existing && existing.id) {
+        await window.changeUserRole(existing.id, role);
+      } else {
+        const { error } = await supabase.from("role_invites").upsert({
+          email,
+          role,
+          invited_by: currentUser.id
+        });
+        if (error) alert("Errore: " + error.message);
+      }
+      document.getElementById("inviteEmailInput").value = "";
+      window.loadUsersList();
+    };
+
+    window.deleteRoleInvite = async function(email) {
+      await supabase.from("role_invites").delete().eq("email", email);
+      window.loadUsersList();
     };
 
     function fmtTs(epochSec) {
@@ -848,7 +1326,7 @@
       if (diffSec < 60) return `${diffSec}s fa`;
       if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m fa`;
       if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h fa`;
-      return new Date(ms).toLocaleDateString("it-IT");
+      return new Date(Number(ms)).toLocaleDateString("it-IT");
     }
 
     // --- MINIMAL CARDS RENDERER ---
@@ -856,6 +1334,7 @@
       const q = (document.getElementById("searchFilter").value || "").toLowerCase();
       const allDevs = Object.values(fleetRegistry).sort((a, b) => (b.last_seen_ms || 0) - (a.last_seen_ms || 0));
       const nowMs = Date.now();
+      const canControl = (currentProfile?.role === "editor" || currentProfile?.role === "admin");
 
       let onlineCount = 0, poweredOnCount = 0, outdatedCount = 0;
       allDevs.forEach(d => {
@@ -910,10 +1389,10 @@
             </div>
 
             <div class="mc-footer">
-              <button class="${d.power ? '' : 'btn-primary'}" onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}}, event)">
+              <button class="${d.power ? '' : 'btn-primary'}" ${canControl ? "" : "disabled"} onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}}, event)">
                 ${d.power ? "Spegni" : "Accendi"}
               </button>
-              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Dettagli &amp; Controlli &rarr;</button>
+              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Dettagli &rarr;</button>
             </div>
           </div>
         `;
@@ -925,6 +1404,7 @@
       if (ev) ev.stopPropagation();
       selectedHwId = hwId;
       populateModal(hwId);
+      applyRolePermissionsUI();
       document.getElementById("deviceModal").classList.add("open");
     };
 
@@ -948,7 +1428,6 @@
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
       pill.className = "pill " + (isOnline ? "green" : "amber");
 
-      // Matrice 23x5 nel Pop-up
       let pxHtml = "";
       for (let i = 0; i < 23 * 5; i++) {
         const r = Math.floor(i / 23), c = i % 23;
@@ -959,7 +1438,7 @@
 
       const pwrBtn = document.getElementById("mPwrBtn");
       pwrBtn.textContent = d.power ? "SPEGNI DISPOSITIVO (ATTUALMENTE ON)" : "ACCENDI DISPOSITIVO (ATTUALMENTE OFF)";
-      pwrBtn.className = d.power ? "btn-danger" : "btn-primary";
+      pwrBtn.className = (d.power ? "btn-danger" : "btn-primary") + " role-editor";
 
       document.getElementById("mColorPicker").value = hex.toLowerCase();
       document.getElementById("mBrightSlider").value = d.brightness ?? 100;
@@ -967,10 +1446,9 @@
       document.getElementById("mSpeedSlider").value = d.speed ?? 75;
       document.getElementById("mSpeedLbl").textContent = (d.speed ?? 75) + "%";
 
-      // Tab 2: Telemetria & Orari
       document.getElementById("mTelemGrid").innerHTML = `
-        <div class="detail-cell"><span>Ultima Volta Connesso</span><strong>${d.last_seen_ms ? new Date(d.last_seen_ms).toLocaleString("it-IT") : "N/D"}</strong></div>
-        <div class="detail-cell"><span>Prima Associazione</span><strong>${d.first_registered_ms ? new Date(d.first_registered_ms).toLocaleString("it-IT") : "N/D"}</strong></div>
+        <div class="detail-cell"><span>Ultima Volta Connesso</span><strong>${d.last_seen_ms ? new Date(Number(d.last_seen_ms)).toLocaleString("it-IT") : "N/D"}</strong></div>
+        <div class="detail-cell"><span>Prima Associazione</span><strong>${d.first_registered_ms ? new Date(Number(d.first_registered_ms)).toLocaleString("it-IT") : "N/D"}</strong></div>
         <div class="detail-cell"><span>Quando Acceso (Ultimo ON)</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
         <div class="detail-cell"><span>Quando Spento (Ultimo OFF)</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
         <div class="detail-cell"><span>Tempo Totale Acceso</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
@@ -981,7 +1459,6 @@
         <div class="detail-cell"><span>Memoria RAM (Free / Min)</span><strong>${Math.round((d.heap_free || 0)/1024)} KB / ${Math.round((d.heap_min || 0)/1024)} KB</strong></div>
       `;
 
-      // Tab 3: Firmware & Sistema
       document.getElementById("mSysGrid").innerHTML = `
         <div class="detail-cell"><span>Versione Installata</span><strong>v${d.fw || "--"} (${isUpToDate ? "Aggiornato" : "Da aggiornare a v" + latestGitHubVersion})</strong></div>
         <div class="detail-cell"><span>Partizione OTA Attiva</span><strong>${d.ota_part || "app0"} (Dual-OTA Rollback)</strong></div>
@@ -1011,23 +1488,24 @@
       }
     };
 
-    window.renameCurrentDevice = function() {
+    window.renameCurrentDevice = async function() {
       if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
+      if (currentProfile?.role === "viewer") return;
       const cur = fleetRegistry[selectedHwId].alias || selectedHwId;
       const next = prompt("Nome/etichetta per questo Smarty:", cur);
       if (next && next.trim()) {
         fleetRegistry[selectedHwId].alias = next.trim();
-        saveRegistry();
+        await upsertDeviceToSupabase(fleetRegistry[selectedHwId]);
         renderFleet();
         populateModal(selectedHwId);
       }
     };
 
-    window.removeCurrentDevice = function() {
-      if (!selectedHwId) return;
-      if (!confirm(`Rimuovere ${selectedHwId} dal registro?`)) return;
+    window.removeCurrentDevice = async function() {
+      if (!selectedHwId || currentProfile?.role !== "admin") return;
+      if (!confirm(`Rimuovere ${selectedHwId} dal database Supabase?`)) return;
+      await supabase.from("smarty_devices").delete().eq("hw_id", selectedHwId);
       delete fleetRegistry[selectedHwId];
-      saveRegistry();
       closeDeviceModal();
       renderFleet();
     };
@@ -1040,18 +1518,21 @@
       a.click();
     };
 
-    window.importRegistry = function(ev) {
+    window.importRegistry = async function(ev) {
+      if (currentProfile?.role !== "admin") return;
       const f = ev.target.files[0];
       if (!f) return;
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         try {
           const data = JSON.parse(reader.result);
-          if (data.fleetRegistry) fleetRegistry = { ...fleetRegistry, ...data.fleetRegistry };
-          if (data.eventLogs) eventLogs = data.eventLogs;
-          saveRegistry();
+          if (data.fleetRegistry) {
+            for (const dev of Object.values(data.fleetRegistry)) {
+              fleetRegistry[dev.hw_id] = dev;
+              await upsertDeviceToSupabase(dev);
+            }
+          }
           renderFleet();
-          renderEventLogs();
         } catch (_) {
           alert("File JSON non valido");
         }
@@ -1059,21 +1540,9 @@
       reader.readAsText(f);
     };
 
-    function initDashboard() {
-      loadSavedData();
-      renderFleet();
-      renderEventLogs();
-      fetchLatestGitHubVersion();
-      window.pollHistoricalTelemetry();
-      connectRealtimeStream();
-      setInterval(() => renderFleet(), 15000);
-    }
-
-    if (sessionStorage.getItem("smarty_admin_auth") === "1") {
-      document.getElementById("authOverlay").style.display = "none";
-      document.getElementById("appWrap").style.display = "block";
-      initDashboard();
-    }
+    // Avvio automatico se sessione Supabase già attiva
+    bootAuthenticatedSession();
+    setInterval(() => renderFleet(), 15000);
   </script>
 </body>
 </html>
