@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Fleet Control (Supabase RBAC) — MAICXEN STUDIOS</title>
+  <title>Smarty Fleet Control — MAICXEN STUDIOS</title>
   <style>
     :root {
-      --bg: #080b11;
-      --surface: #0f1520;
-      --surface-2: #151d2c;
+      --bg: #070a0f;
+      --surface: #0e131d;
+      --surface-2: #141c2b;
+      --surface-3: #1b2538;
       --border: rgba(255, 255, 255, 0.08);
-      --text: #f1f5f9;
+      --border-hover: rgba(56, 189, 248, 0.35);
+      --text: #f8fafc;
       --muted: #8b9bb4;
       --green: #10b981;
       --cyan: #06b6d4;
@@ -22,18 +24,29 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Auth Gate (Login / SignUp / Password Reset) */
+    svg.ico {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    /* Auth Gate */
     .auth-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 50% 20%, #111c2d 0%, #06080d 75%);
+      background: radial-gradient(circle at 50% 15%, #101d30 0%, #05070b 75%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -43,40 +56,46 @@
 
     .auth-card {
       width: 100%;
-      max-width: 410px;
+      max-width: 420px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 28px 24px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+      padding: 30px 26px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
       text-align: center;
     }
 
     .vendor-tag {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 1.8px;
       text-transform: uppercase;
       color: var(--cyan);
-      margin-bottom: 8px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      padding: 4px 11px;
+      border-radius: 999px;
+      margin-bottom: 12px;
     }
 
     .auth-mode-tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 4px;
-      background: #070a10;
+      background: #06090e;
       padding: 4px;
       border-radius: 10px;
-      margin: 14px 0 18px;
+      margin: 16px 0 18px;
       border: 1px solid var(--border);
     }
     .auth-mode-tab {
       background: transparent;
       border: none;
       color: var(--muted);
-      padding: 7px;
+      padding: 8px;
       font-size: 12px;
       font-weight: 700;
       border-radius: 7px;
@@ -88,11 +107,11 @@
     }
 
     input, select {
-      background: #070a10;
+      background: #06090e;
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 9px;
-      padding: 9px 12px;
+      padding: 10px 12px;
       font-size: 13.5px;
       outline: none;
       transition: border-color 0.15s;
@@ -114,8 +133,8 @@
       justify-content: center;
       gap: 6px;
     }
-    button:hover:not(:disabled) { background: #1e293b; border-color: rgba(255,255,255,0.16); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: var(--surface-3); border-color: rgba(255,255,255,0.16); }
+    button:disabled { opacity: 0.42; cursor: not-allowed; }
     button.btn-primary {
       background: var(--green);
       color: #03150e;
@@ -123,9 +142,9 @@
       font-weight: 700;
     }
     button.btn-cyan {
-      background: rgba(6, 182, 212, 0.15);
+      background: rgba(6, 182, 212, 0.14);
       color: #38bdf8;
-      border-color: rgba(6, 182, 212, 0.35);
+      border-color: rgba(6, 182, 212, 0.32);
     }
     button.btn-danger {
       background: rgba(239, 68, 68, 0.12);
@@ -133,12 +152,40 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
-    /* Minimal App Shell */
+    .auth-alert {
+      display: none;
+      margin-top: 14px;
+      padding: 11px 13px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      text-align: left;
+    }
+    .auth-alert.err {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .auth-alert.ok {
+      display: block;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+    .auth-alert.warn {
+      display: block;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fcd34d;
+    }
+
+    /* App Shell */
     .app-shell {
       display: none;
-      max-width: 1140px;
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 20px 18px 48px;
+      padding: 20px 18px 54px;
     }
 
     .navbar {
@@ -146,14 +193,43 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       padding-bottom: 16px;
       margin-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
 
-    .brand-block h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
-    .brand-block span.sub { font-size: 12px; color: var(--muted); }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 11px 5px 6px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .avatar-img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--surface-3);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #38bdf8;
+      overflow: hidden;
+    }
 
     .nav-tabs {
       display: flex;
@@ -196,13 +272,13 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 12px 15px;
+      padding: 13px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .kpi-mini .lbl { font-size: 11.5px; color: var(--muted); }
-    .kpi-mini .num { font-size: 20px; font-weight: 800; }
+    .kpi-mini .lbl { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+    .kpi-mini .num { font-size: 21px; font-weight: 800; }
 
     .section-view { display: none; }
     .section-view.active { display: block; }
@@ -236,7 +312,7 @@
     }
     .mini-card:hover {
       transform: translateY(-1px);
-      border-color: rgba(56, 189, 248, 0.35);
+      border-color: var(--border-hover);
     }
     .mini-card.online { border-left: 3px solid var(--green); }
     .mini-card.offline { border-left: 3px solid #475569; opacity: 0.82; }
@@ -247,7 +323,7 @@
       align-items: flex-start;
       gap: 8px;
     }
-    .mc-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+    .mc-title { font-size: 14.5px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
     .dot.off { background: #64748b; }
@@ -255,13 +331,14 @@
     .mc-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
     .pill {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
       padding: 2px 8px;
       border-radius: 999px;
       border: 1px solid transparent;
       white-space: nowrap;
       text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
     .pill.green { background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
     .pill.amber { background: rgba(245, 158, 11, 0.14); color: #fcd34d; border-color: rgba(245, 158, 11, 0.3); }
@@ -281,12 +358,12 @@
     }
 
     .color-dot {
-      width: 12px;
-      height: 12px;
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
       display: inline-block;
       vertical-align: middle;
-      margin-right: 4px;
+      margin-right: 5px;
       border: 1px solid rgba(255,255,255,0.25);
     }
 
@@ -304,7 +381,7 @@
       padding: 20px;
       margin-bottom: 14px;
     }
-    .panel-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .panel-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 5px; }
     .panel-box p { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
 
     .events-log {
@@ -330,6 +407,7 @@
       text-align: left;
       padding: 10px 8px;
       border-bottom: 1px solid var(--border);
+      vertical-align: middle;
     }
     .users-table th { font-size: 11px; text-transform: uppercase; color: var(--muted); }
 
@@ -337,7 +415,7 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(3, 6, 12, 0.78);
+      background: rgba(3, 6, 12, 0.8);
       backdrop-filter: blur(8px);
       display: none;
       align-items: center;
@@ -373,7 +451,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
-      background: #070a10;
+      background: #06090e;
       padding: 4px;
       border-radius: 10px;
       margin-bottom: 16px;
@@ -437,30 +515,33 @@
 </head>
 <body>
 
-  <!-- SUPABASE AUTH GATE (LOGIN / SIGN UP / PASSWORD RESET) -->
+  <!-- INVITE-ONLY SUPABASE AUTH GATE -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
-      <span class="vendor-tag">MAICXEN STUDIOS &bull; SUPABASE AUTH</span>
-      <h2 style="font-size:20px; margin-bottom:4px;">Smarty Fleet Control</h2>
+      <div class="vendor-tag">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        MAICXEN STUDIOS &bull; FLEET ACCESS
+      </div>
+      <h2 style="font-size:21px; font-weight:800; margin-bottom:4px;">Smarty Control Center</h2>
       <p style="font-size:12.5px; color:var(--muted);">
-        Accesso multi-utente con gerarchia ruoli (<strong>Admin</strong>, <strong>Editor</strong>, <strong>Viewer</strong>) e protezione Row-Level Security.
+        Invite-only fleet management with role-based access control (<strong>Admin</strong>, <strong>Editor</strong>, <strong>Viewer</strong>).
       </p>
 
       <div class="auth-mode-tabs" id="authTabs">
-        <button class="auth-mode-tab active" onclick="setAuthMode('login', this)">Accedi</button>
-        <button class="auth-mode-tab" onclick="setAuthMode('signup', this)">Registrati</button>
-        <button class="auth-mode-tab" onclick="setAuthMode('reset', this)">Recupera</button>
+        <button class="auth-mode-tab active" id="tabBtnLogin" onclick="setAuthMode('login', this)">Sign In</button>
+        <button class="auth-mode-tab" id="tabBtnSignup" onclick="setAuthMode('signup', this)">Register</button>
+        <button class="auth-mode-tab" id="tabBtnReset" onclick="setAuthMode('reset', this)">Recover</button>
       </div>
 
       <form onsubmit="handleAuthSubmit(event)" style="display:flex; flex-direction:column; gap:10px; text-align:left;">
-        <div id="nameFieldWrap" style="display:none; flex-direction:column; gap:4px;">
-          <label style="font-size:11.5px; color:var(--muted);">Nome Completo</label>
-          <input type="text" id="authName" placeholder="Es. Emanuele" />
+        <div id="usernameFieldWrap" style="display:none; flex-direction:column; gap:4px;">
+          <label style="font-size:11.5px; color:var(--muted);">Username</label>
+          <input type="text" id="authUsername" placeholder="e.g. emanuele_admin" />
         </div>
 
         <div id="emailFieldWrap" style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11.5px; color:var(--muted);">Email</label>
-          <input type="email" id="authEmail" placeholder="nome@dominio.it" required autocomplete="email" />
+          <label style="font-size:11.5px; color:var(--muted);">Authorized Email Address</label>
+          <input type="email" id="authEmail" placeholder="name@domain.com" required autocomplete="email" />
         </div>
 
         <div id="passFieldWrap" style="display:flex; flex-direction:column; gap:4px;">
@@ -469,124 +550,150 @@
         </div>
 
         <button type="submit" class="btn-primary" id="authSubmitBtn" style="padding:11px; margin-top:4px;">
-          Accedi alla Dashboard
+          Sign In to Dashboard
         </button>
       </form>
 
-      <p id="authFeedback" style="font-size:12.5px; margin-top:12px; display:none;"></p>
+      <div id="authFeedback" class="auth-alert"></div>
     </div>
   </div>
 
-  <!-- MINIMAL ADMIN / EDITOR / VIEWER DASHBOARD -->
+  <!-- MINIMAL FLEET DASHBOARD SHELL -->
   <div class="app-shell" id="appWrap">
     <nav class="navbar">
-      <div class="brand-block">
-        <h1>
-          Smarty Fleet
-          <span class="pill green" id="streamStatusPill">LIVE</span>
-          <span class="pill purple" id="userRoleBadge">VIEWER</span>
-        </h1>
-        <span class="sub" id="userEmailSub">--</span> &bull;
-        <span class="sub" id="latestFwPill">Release Ufficiale: v1.5.0</span>
+      <div class="brand-left">
+        <div>
+          <h1 style="font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px;">
+            Smarty Fleet
+            <span class="pill green" id="streamStatusPill">LIVE</span>
+          </h1>
+          <span style="font-size:11.5px; color:var(--muted);" id="latestFwPill">Latest Release: v1.5.0</span>
+        </div>
       </div>
 
       <div class="nav-tabs">
-        <button class="nav-tab active" onclick="switchSection('devices', this)">Dispositivi</button>
-        <button class="nav-tab" id="navActionsBtn" onclick="switchSection('actions', this)">Comandi Globali &amp; LAN</button>
-        <button class="nav-tab" onclick="switchSection('logs', this)">Log Eventi</button>
-        <button class="nav-tab" id="navUsersBtn" style="display:none;" onclick="switchSection('users', this)">Utenti &amp; Ruoli</button>
-        <button class="nav-tab" onclick="switchSection('settings', this)">Profilo &amp; Backup</button>
+        <button class="nav-tab active" onclick="switchSection('devices', this)">
+          <svg class="ico" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Devices
+        </button>
+        <button class="nav-tab" onclick="switchSection('actions', this)">
+          <svg class="ico" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Global &amp; LAN
+        </button>
+        <button class="nav-tab" onclick="switchSection('logs', this)">
+          <svg class="ico" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Activity Log
+        </button>
+        <button class="nav-tab" id="navUsersBtn" style="display:none;" onclick="switchSection('users', this)">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Users &amp; Roles
+        </button>
+        <button class="nav-tab" id="navProfileBtn" onclick="switchSection('settings', this)">
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Profile
+        </button>
+      </div>
+
+      <div class="user-chip" onclick="switchSection('settings', document.getElementById('navProfileBtn'))" title="Open Profile Settings">
+        <div class="avatar-img" id="navAvatarBox">U</div>
+        <div style="text-align:left;">
+          <div style="font-size:12px; font-weight:700; line-height:1.1;" id="navUsername">--</div>
+          <span class="pill purple" id="userRoleBadge" style="font-size:9px; padding:1px 6px;">VIEWER</span>
+        </div>
       </div>
     </nav>
 
     <!-- COMPACT KPI BAR -->
     <div class="kpi-strip">
-      <div class="kpi-mini"><span class="lbl">Registrati</span><span class="num" id="kpiTotal">0</span></div>
-      <div class="kpi-mini"><span class="lbl">Online</span><span class="num" style="color:var(--green);" id="kpiOnline">0</span></div>
-      <div class="kpi-mini"><span class="lbl">Accesi (ON)</span><span class="num" style="color:var(--cyan);" id="kpiPoweredOn">0</span></div>
-      <div class="kpi-mini"><span class="lbl">Da Aggiornare</span><span class="num" style="color:var(--amber);" id="kpiOutdated">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Registered</span><span class="num" id="kpiTotal">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Online Now</span><span class="num" style="color:var(--green);" id="kpiOnline">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Powered ON</span><span class="num" style="color:var(--cyan);" id="kpiPoweredOn">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Update Pending</span><span class="num" style="color:var(--amber);" id="kpiOutdated">0</span></div>
     </div>
 
-    <!-- SEZIONE 1: DISPOSITIVI (MINIMAL CARDS) -->
+    <!-- SECTION 1: DEVICES (MINIMAL CARDS) -->
     <section class="section-view active" id="sec-devices">
       <div class="filter-bar">
-        <input type="text" id="searchFilter" placeholder="Cerca dispositivo (nome, ID, IP)..." oninput="renderFleet()" style="width:260px;" />
-        <button onclick="syncWithCloudAndDb()">Sincronizza Ora</button>
+        <input type="text" id="searchFilter" placeholder="Filter by name, Hardware ID, or IP..." oninput="renderFleet()" style="width:270px;" />
+        <button onclick="syncWithCloudAndDb()">
+          <svg class="ico" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh Fleet
+        </button>
       </div>
       <div class="fleet-grid" id="devicesGrid"></div>
     </section>
 
-    <!-- SEZIONE 2: COMANDI GLOBALI & DISCOVERY LAN -->
+    <!-- SECTION 2: GLOBAL COMMANDS & LAN DISCOVERY -->
     <section class="section-view" id="sec-actions">
       <div class="panel-box">
-        <h3>Broadcast a Tutta la Flotta</h3>
-        <p>Invia un messaggio scorrevole o un comando simultaneo a tutti gli Smarty registrati (richiede ruolo <strong>Editor</strong> o <strong>Admin</strong>).</p>
+        <h3>Fleet-Wide Broadcast</h3>
+        <p>Send a simultaneous scrolling marquee message or power state to all registered Smarty units (requires <strong>Editor</strong> or <strong>Admin</strong> role).</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="text" id="broadcastScrollTxt" placeholder="Testo scorrevole da inviare a tutti..." style="flex:1; min-width:200px;" />
-          <button class="btn-primary role-editor" onclick="broadcastScroll()">Invia Testo a Tutti</button>
-          <button class="role-editor" onclick="broadcastCommand({power:1})">Accendi Tutti</button>
-          <button class="role-editor" onclick="broadcastCommand({power:0})">Spegni Tutti</button>
-          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA - Solo Admin)</button>
+          <input type="text" id="broadcastScrollTxt" placeholder="Scrolling message to broadcast..." style="flex:1; min-width:200px;" />
+          <button class="btn-primary role-editor" onclick="broadcastScroll()">Broadcast Text</button>
+          <button class="role-editor" onclick="broadcastCommand({power:1})">All ON</button>
+          <button class="role-editor" onclick="broadcastCommand({power:0})">All OFF</button>
+          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Update All (FOTA - Admin)</button>
         </div>
       </div>
 
       <div class="panel-box">
-        <h3>Aggiunta / Scansione Diretta via IP Locale</h3>
-        <p>Se uno Smarty si trova sulla tua stessa rete Wi-Fi, puoi interrogarlo direttamente inserendo il suo indirizzo IP.</p>
+        <h3>Direct Local Network Discovery (LAN IP Probe)</h3>
+        <p>Query a Smarty device directly on your local Wi-Fi network via its IPv4 address.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="text" id="lanProbeIp" placeholder="Indirizzo IP locale (es. 192.168.1.50)" style="width:260px;" />
-          <button class="btn-cyan" onclick="probeLocalDevice()">Connetti IP Locale</button>
+          <input type="text" id="lanProbeIp" placeholder="Local IP (e.g. 192.168.1.50)" style="width:260px;" />
+          <button class="btn-cyan" onclick="probeLocalDevice()">Probe Local IP</button>
         </div>
       </div>
     </section>
 
-    <!-- SEZIONE 3: REGISTRO CRONOLOGICO EVENTI -->
+    <!-- SECTION 3: ACTIVITY LOG -->
     <section class="section-view" id="sec-logs">
       <div class="panel-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <div>
-            <h3>Registro Cronologico Eventi Cloud (Supabase)</h3>
-            <p style="margin-bottom:0;">Storico condiviso di accensioni, spegnimenti, riavvii e comandi eseguiti.</p>
+            <h3>Chronological Fleet Activity Log</h3>
+            <p style="margin-bottom:0;">Cloud-synchronized audit log of power events, boot cycles, and remote commands.</p>
           </div>
-          <button class="role-admin" onclick="clearEventLog()">Svuota Log (Admin)</button>
+          <button class="role-admin" onclick="clearEventLog()">Clear Log (Admin)</button>
         </div>
         <div class="events-log" id="eventsLog"></div>
       </div>
     </section>
 
-    <!-- SEZIONE 4: GESTIONE UTENTI E GERARCHIA RUOLI (SOLO ADMIN) -->
+    <!-- SECTION 4: USERS & ROLES MANAGEMENT (ADMIN ONLY) -->
     <section class="section-view" id="sec-users">
       <div class="panel-box">
-        <h3>Pre-Autorizza / Assegna Ruolo per Email</h3>
-        <p>Pre-imposta il ruolo (<strong>Admin</strong>, <strong>Editor</strong> o <strong>Viewer</strong>) per un indirizzo email prima o dopo la registrazione.</p>
+        <h3>Pre-Authorize User Email &amp; Assign Role</h3>
+        <p>Users <strong>cannot register</strong> unless their email address is added here first. Once added, they can switch to the <em>Register</em> tab to set their username and password.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <input type="email" id="inviteEmailInput" placeholder="email@esempio.it" style="width:260px;" />
+          <input type="email" id="inviteEmailInput" placeholder="user@example.com" style="width:260px;" />
           <select id="inviteRoleSelect">
-            <option value="viewer">Viewer (Sola Lettura)</option>
-            <option value="editor">Editor (Controllo Luci &amp; Testi)</option>
-            <option value="admin">Admin (Controllo Totale &amp; Utenti)</option>
+            <option value="viewer">Viewer (Read-Only Telemetry)</option>
+            <option value="editor">Editor (Control Modes, Colors &amp; Text)</option>
+            <option value="admin">Admin (Full System &amp; User Control)</option>
           </select>
-          <button class="btn-primary" onclick="assignRoleByEmail()">Salva Ruolo Email</button>
+          <button class="btn-primary" onclick="assignRoleByEmail()">Authorize Email</button>
         </div>
       </div>
 
       <div class="panel-box">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <h3>Account Registrati e Gerarchia Permessi</h3>
-            <p style="margin-bottom:0;">Modifica in tempo reale il livello di accesso o sospendi un utente.</p>
+            <h3>Authorized Accounts &amp; Access Control</h3>
+            <p style="margin-bottom:0;">Modify role hierarchy or temporarily ban/unban user accounts.</p>
           </div>
-          <button onclick="loadUsersList()">Aggiorna Lista</button>
+          <button onclick="loadUsersList()">Refresh Users</button>
         </div>
         <div style="overflow-x:auto;">
           <table class="users-table">
             <thead>
               <tr>
-                <th>Utente / Email</th>
-                <th>Ruolo Attuale</th>
-                <th>Stato</th>
-                <th>Registrato il</th>
-                <th>Azioni Admin</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Admin Actions</th>
               </tr>
             </thead>
             <tbody id="usersTableBody"></tbody>
@@ -595,101 +702,124 @@
       </div>
     </section>
 
-    <!-- SEZIONE 5: PROFILO, CAMBIO PASSWORD & BACKUP -->
+    <!-- SECTION 5: PROFILE, AVATAR, PASSWORD & BACKUP -->
     <section class="section-view" id="sec-settings">
       <div class="panel-box">
-        <h3>Il Tuo Profilo &amp; Cambio Password</h3>
-        <p id="profileSummaryText">Autenticato tramite Supabase Auth.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <input type="password" id="newPassInput" placeholder="Nuova password (min. 6 caratteri)..." minlength="6" style="width:260px;" />
-          <button class="btn-primary" onclick="updateMyPassword()">Aggiorna Password</button>
-          <button class="btn-danger" onclick="logoutUser()">Disconnetti Account</button>
+        <h3>User Profile &amp; Cloud Avatar</h3>
+        <p>Your profile picture and username are stored on Supabase and synced across all your devices.</p>
+        <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+          <div class="avatar-img" id="profileAvatarPreview" style="width:68px; height:68px; font-size:24px;">U</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <input type="text" id="profileUsernameInput" placeholder="Username..." style="width:210px;" />
+              <button class="btn-cyan" onclick="saveProfileUsername()">Save Username</button>
+              <button onclick="document.getElementById('avatarFileInput').click()">Upload Avatar Photo</button>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)" />
+            </div>
+            <span style="font-size:12px; color:var(--muted);" id="profileEmailInfo">--</span>
+          </div>
         </div>
       </div>
 
       <div class="panel-box">
-        <h3>Backup &amp; Ripristino Registro JSON</h3>
-        <p>Esporta una copia locale di tutti i dispositivi o importa un backup JSON nel database Supabase.</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-cyan" onclick="exportRegistry()">Esporta Backup JSON</button>
-          <button class="role-admin" onclick="document.getElementById('importFile').click()">Importa Backup JSON</button>
-          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+        <h3>Change Account Password</h3>
+        <p>For security, you must verify your <strong>current password</strong> before setting a new password.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="password" id="curPassInput" placeholder="Current password..." style="width:200px;" />
+          <input type="password" id="newPassInput" placeholder="New password (min 6 chars)..." minlength="6" style="width:220px;" />
+          <input type="password" id="confPassInput" placeholder="Confirm new password..." minlength="6" style="width:200px;" />
+          <button class="btn-primary" onclick="updateMyPassword()">Update Password</button>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3>Database Backup &amp; Session</h3>
+            <p style="margin-bottom:0;">Export or import fleet JSON snapshots or sign out of your account.</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn-cyan" onclick="exportRegistry()">Export JSON</button>
+            <button class="role-admin" onclick="document.getElementById('importFile').click()">Import JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+            <button class="btn-danger" onclick="logoutUser()">Sign Out</button>
+          </div>
         </div>
       </div>
     </section>
   </div>
 
-  <!-- POP-UP MODAL: ISPETTORE DETTAGLI, TELEMETRIA E CONTROLLO DISPOSITIVO -->
+  <!-- POP-UP MODAL: DEVICE INSPECTOR, TELEMETRY & REMOTE CONTROLLER -->
   <div class="modal-backdrop" id="deviceModal" onclick="if(event.target===this)closeDeviceModal()">
     <div class="modal-window">
       <div class="modal-header">
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
             <h2 id="mTitle" style="font-size:18px; font-weight:800;">Smarty</h2>
-            <button class="role-editor" onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rinomina</button>
+            <button class="role-editor" onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rename</button>
           </div>
           <div id="mSubtitle" style="font-size:12px; color:var(--muted); margin-top:3px;">ID: --</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <span class="pill green" id="mOnlinePill">ONLINE</span>
-          <button onclick="closeDeviceModal()" style="padding:5px 10px;">Chiudi &times;</button>
+          <button onclick="closeDeviceModal()" style="padding:5px 10px;">Close &times;</button>
         </div>
       </div>
 
       <div class="mini-matrix" id="mMatrix"></div>
 
       <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Controlli &amp; Effetti</button>
-        <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetria &amp; Orari</button>
-        <button class="modal-tab" onclick="switchModalTab('sys', this)">3. Firmware &amp; Sistema</button>
+        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Controls &amp; Modes</button>
+        <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetry &amp; Timestamps</button>
+        <button class="modal-tab" onclick="switchModalTab('sys', this)">3. Firmware &amp; System</button>
       </div>
 
-      <!-- MODAL TAB 1: CONTROLLI & EFFETTI -->
+      <!-- MODAL TAB 1: CONTROLS & MODES -->
       <div class="modal-pane active" id="mpane-ctrl">
         <div id="viewerNotice" style="display:none; margin-bottom:12px; padding:9px 12px; border-radius:8px; background:rgba(245,158,11,0.12); color:#fcd34d; font-size:12px;">
-          Il tuo account ha ruolo <strong>Viewer (Sola Lettura)</strong>: i controlli remoti sono disabilitati.
+          Your account has <strong>Viewer (Read-Only)</strong> permissions. Remote controls are disabled.
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">ACCENDI / SPEGNI</button>
-          <input type="color" id="mColorPicker" class="role-editor" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="Colore RGB" />
+          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">POWER ON / OFF</button>
+          <input type="color" id="mColorPicker" class="role-editor" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="RGB Color" />
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
           <div class="detail-cell">
-            <span>Luminosità (<strong id="mBrightLbl">100%</strong>)</span>
+            <span>Brightness (<strong id="mBrightLbl">100%</strong>)</span>
             <input type="range" id="mBrightSlider" class="role-editor" min="0" max="100" value="100" style="width:100%; margin-top:6px;" oninput="document.getElementById('mBrightLbl').textContent=this.value+'%'" onchange="sendModalCmd({brightness:Number(this.value)})" />
           </div>
           <div class="detail-cell">
-            <span>Velocità (<strong id="mSpeedLbl">75%</strong>)</span>
+            <span>Animation Speed (<strong id="mSpeedLbl">75%</strong>)</span>
             <input type="range" id="mSpeedSlider" class="role-editor" min="1" max="100" value="75" style="width:100%; margin-top:6px;" oninput="document.getElementById('mSpeedLbl').textContent=this.value+'%'" onchange="sendModalCmd({speed:Number(this.value)})" />
           </div>
         </div>
 
         <div style="margin-bottom:14px;">
-          <span style="font-size:11.5px; color:var(--muted);">Modalità Visualizzazione</span>
+          <span style="font-size:11.5px; color:var(--muted);">Display Mode</span>
           <div class="modes-grid" id="mModesGrid"></div>
         </div>
 
         <div style="display:flex; gap:8px;">
-          <input type="text" id="mScrollInput" class="role-editor" placeholder="Invia testo scorrevole personalizzato..." style="flex:1;" />
-          <button class="btn-cyan role-editor" onclick="sendModalScroll()">Invia Testo</button>
+          <input type="text" id="mScrollInput" class="role-editor" placeholder="Send custom scrolling marquee text..." style="flex:1;" />
+          <button class="btn-cyan role-editor" onclick="sendModalScroll()">Send Text</button>
         </div>
       </div>
 
-      <!-- MODAL TAB 2: TELEMETRIA & ORARI -->
+      <!-- MODAL TAB 2: TELEMETRY & TIMESTAMPS -->
       <div class="modal-pane" id="mpane-telem">
         <div class="detail-grid" id="mTelemGrid"></div>
       </div>
 
-      <!-- MODAL TAB 3: FIRMWARE & SISTEMA -->
+      <!-- MODAL TAB 3: FIRMWARE & SYSTEM -->
       <div class="modal-pane" id="mpane-sys">
         <div class="detail-grid" id="mSysGrid" style="margin-bottom:16px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--border);">
-          <button class="btn-cyan role-admin" onclick="sendModalCmd({action:'fota_check'})">Controlla FOTA (Admin)</button>
-          <button class="btn-primary role-admin" onclick="sendModalCmd({action:'fota_update'})">Forza Aggiornamento FOTA (Admin)</button>
-          <button class="role-admin" onclick="sendModalCmd({action:'reboot'})">Riavvia (Admin)</button>
-          <button class="btn-danger role-admin" style="margin-left:auto;" onclick="removeCurrentDevice()">Rimuovi (Admin)</button>
+          <button class="btn-cyan role-admin" onclick="sendModalCmd({action:'fota_check'})">Check FOTA (Admin)</button>
+          <button class="btn-primary role-admin" onclick="sendModalCmd({action:'fota_update'})">Force FOTA Update (Admin)</button>
+          <button class="role-admin" onclick="sendModalCmd({action:'reboot'})">Reboot (Admin)</button>
+          <button class="btn-danger role-admin" style="margin-left:auto;" onclick="removeCurrentDevice()">Remove Device (Admin)</button>
         </div>
       </div>
     </div>
@@ -703,14 +833,13 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Configurazione segreta caricata dinamicamente da public.fleet_config (protetta da RLS in base al ruolo!)
     let relayHost = "https://ntfy.sh";
     let fleetTopic = null;
     let cmdPrefix = null;
 
     let currentUser = null;
-    let currentProfile = null; // { id, email, full_name, role: 'admin'|'editor'|'viewer', is_active }
-    let authMode = "login"; // 'login' | 'signup' | 'reset' | 'update_password'
+    let currentProfile = null;
+    let authMode = "login";
 
     let fleetRegistry = {};
     let eventLogs = [];
@@ -732,7 +861,7 @@
       document.querySelectorAll(".section-view").forEach(s => s.classList.remove("active"));
       document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
       document.getElementById("sec-" + secId).classList.add("active");
-      btnEl.classList.add("active");
+      if (btnEl) btnEl.classList.add("active");
       if (secId === "users") window.loadUsersList();
     };
 
@@ -743,100 +872,150 @@
       btnEl.classList.add("active");
     };
 
-    function showAuthFeedback(msg, isError = false) {
+    function showAuthAlert(msg, type = "err") {
       const el = document.getElementById("authFeedback");
-      el.style.display = "block";
-      el.style.color = isError ? "var(--red)" : "var(--green)";
+      el.className = `auth-alert ${type}`;
       el.textContent = msg;
     }
 
     window.setAuthMode = function(mode, btnEl = null) {
       authMode = mode;
-      document.getElementById("authFeedback").style.display = "none";
+      document.getElementById("authFeedback").className = "auth-alert";
       if (btnEl) {
         document.querySelectorAll(".auth-mode-tab").forEach(b => b.classList.remove("active"));
         btnEl.classList.add("active");
       }
-      const nameWrap = document.getElementById("nameFieldWrap");
+      const userWrap = document.getElementById("usernameFieldWrap");
       const emailWrap = document.getElementById("emailFieldWrap");
       const passWrap = document.getElementById("passFieldWrap");
       const passInput = document.getElementById("authPass");
+      const userInput = document.getElementById("authUsername");
       const submitBtn = document.getElementById("authSubmitBtn");
       const passLabel = document.getElementById("passFieldLabel");
 
       if (mode === "login") {
-        nameWrap.style.display = "none";
+        userWrap.style.display = "none";
+        userInput.required = false;
         emailWrap.style.display = "flex";
         passWrap.style.display = "flex";
         passInput.required = true;
         passLabel.textContent = "Password";
-        submitBtn.textContent = "Accedi alla Dashboard";
+        submitBtn.textContent = "Sign In to Dashboard";
       } else if (mode === "signup") {
-        nameWrap.style.display = "flex";
+        userWrap.style.display = "flex";
+        userInput.required = true;
         emailWrap.style.display = "flex";
         passWrap.style.display = "flex";
         passInput.required = true;
-        passLabel.textContent = "Crea Password (min. 6 caratteri)";
-        submitBtn.textContent = "Crea Account (Il 1° utente diventa Admin)";
+        passLabel.textContent = "Create Password (min. 6 characters)";
+        submitBtn.textContent = "Complete Authorized Registration";
       } else if (mode === "reset") {
-        nameWrap.style.display = "none";
+        userWrap.style.display = "none";
+        userInput.required = false;
         emailWrap.style.display = "flex";
         passWrap.style.display = "none";
         passInput.required = false;
-        submitBtn.textContent = "Invia Email di Ripristino Password";
+        submitBtn.textContent = "Send Password Recovery Email";
       } else if (mode === "update_password") {
         document.getElementById("authTabs").style.display = "none";
-        nameWrap.style.display = "none";
+        userWrap.style.display = "none";
         emailWrap.style.display = "none";
         passWrap.style.display = "flex";
         passInput.required = true;
-        passLabel.textContent = "Inserisci la Nuova Password";
-        submitBtn.textContent = "Salva Nuova Password";
+        passLabel.textContent = "Enter New Password";
+        submitBtn.textContent = "Save New Password";
       }
     };
 
     window.handleAuthSubmit = async function(e) {
       e.preventDefault();
-      const email = document.getElementById("authEmail").value.trim();
+      const email = document.getElementById("authEmail").value.trim().toLowerCase();
       const password = document.getElementById("authPass").value;
-      const fullName = document.getElementById("authName").value.trim();
+      const username = document.getElementById("authUsername").value.trim();
       const btn = document.getElementById("authSubmitBtn");
       btn.disabled = true;
 
       try {
         if (authMode === "login") {
           const { error } = await supabase.auth.signInWithPassword({ email, password });
-          if (error) throw error;
+          if (error) {
+            // Check if this email was pre-authorized by Admin in role_invites but hasn't registered yet
+            const { data: invite } = await supabase
+              .from("role_invites")
+              .select("email, role, accepted_at")
+              .ilike("email", email)
+              .maybeSingle();
+
+            if (invite && !invite.accepted_at) {
+              window.setAuthMode("signup", document.getElementById("tabBtnSignup"));
+              document.getElementById("authEmail").value = email;
+              showAuthAlert(
+                `First-Time Access Denied: Your email (${email}) has been pre-authorized by the Administrator with role "${invite.role.toUpperCase()}". Please complete your registration below by choosing a username and password.`,
+                "warn"
+              );
+              return;
+            }
+            if (!invite && error.message.includes("Invalid login credentials")) {
+              throw new Error("Sign-in denied: invalid credentials, or your email has not been authorized by the Administrator. Please contact the Administrator.");
+            }
+            throw error;
+          }
         } else if (authMode === "signup") {
+          // 1. Pre-check invite table before calling signUp
+          const { data: invite } = await supabase
+            .from("role_invites")
+            .select("email, role, accepted_at")
+            .ilike("email", email)
+            .maybeSingle();
+
+          if (!invite) {
+            throw new Error(
+              "Registration Denied: Your email address has not been pre-authorized by the Administrator. Please contact the Administrator to request access."
+            );
+          }
+
+          if (invite.accepted_at) {
+            throw new Error("This email address is already registered. Please sign in or use Password Recovery.");
+          }
+
           const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-              data: { full_name: fullName },
+              data: { username, full_name: username },
               emailRedirectTo: window.location.href
             }
           });
-          if (error) throw error;
+          if (error) {
+            if (error.message.includes("SM_NOT_INVITED")) {
+              throw new Error("Registration Denied: Your email address has not been authorized by the Administrator. Please contact the Administrator.");
+            }
+            throw error;
+          }
+
           if (data.session) {
-            showAuthFeedback("Account creato e autenticato!");
+            showAuthAlert(`Account activated with role ${invite.role.toUpperCase()}!`, "ok");
           } else {
-            showAuthFeedback("Registrazione completata! Controlla la tua casella email per confermare l'indirizzo.");
+            showAuthAlert(
+              `Registration submitted (Assigned Role: ${invite.role.toUpperCase()})! Please check your inbox (${email}) and click the confirmation link from Supabase to activate your account.`,
+              "ok"
+            );
           }
         } else if (authMode === "reset") {
           const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.href
           });
           if (error) throw error;
-          showAuthFeedback("Email di ripristino inviata! Clicca sul link ricevuto via email per impostare la nuova password.");
+          showAuthAlert("Password recovery email sent! Click the link in your email to set a new password.", "ok");
         } else if (authMode === "update_password") {
           const { error } = await supabase.auth.updateUser({ password });
           if (error) throw error;
           document.getElementById("authTabs").style.display = "grid";
-          showAuthFeedback("Password aggiornata con successo!");
+          showAuthAlert("Password updated successfully!", "ok");
           await bootAuthenticatedSession();
         }
       } catch (err) {
-        showAuthFeedback(err.message || "Errore di autenticazione", true);
+        showAuthAlert(err.message || "Authentication error", "err");
       } finally {
         btn.disabled = false;
       }
@@ -848,18 +1027,119 @@
       location.reload();
     };
 
+    // --- PASSWORD CHANGE REQUIRING CURRENT PASSWORD ---
     window.updateMyPassword = async function() {
+      const curPassword = document.getElementById("curPassInput").value;
       const newPassword = document.getElementById("newPassInput").value;
-      if (!newPassword || newPassword.length < 6) {
-        alert("Inserisci una password di almeno 6 caratteri.");
+      const confPassword = document.getElementById("confPassInput").value;
+
+      if (!curPassword) {
+        alert("Please enter your current password.");
         return;
       }
+      if (!newPassword || newPassword.length < 6) {
+        alert("New password must be at least 6 characters.");
+        return;
+      }
+      if (newPassword !== confPassword) {
+        alert("New password and confirmation do not match.");
+        return;
+      }
+
+      // 1. Verify current password first
+      const { error: verifyErr } = await supabase.auth.signInWithPassword({
+        email: currentProfile.email,
+        password: curPassword
+      });
+      if (verifyErr) {
+        alert("Verification Failed: Your current password is incorrect.");
+        return;
+      }
+
+      // 2. Update to new password
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) {
-        alert("Errore: " + error.message);
+        alert("Error updating password: " + error.message);
       } else {
+        document.getElementById("curPassInput").value = "";
         document.getElementById("newPassInput").value = "";
-        alert("Password aggiornata con successo!");
+        document.getElementById("confPassInput").value = "";
+        alert("Password verified and updated successfully!");
+      }
+    };
+
+    // --- AVATAR & USERNAME PROFILE MANAGEMENT ---
+    function renderAvatarElement(el, profile) {
+      if (!el) return;
+      const initials = ((profile?.username || profile?.email || "U")[0]).toUpperCase();
+      if (profile?.avatar_url) {
+        el.innerHTML = `<img src="${profile.avatar_url}" alt="avatar" style="width:100%;height:100%;object-fit:cover;" />`;
+      } else {
+        el.textContent = initials;
+      }
+    }
+
+    window.saveProfileUsername = async function() {
+      const uname = document.getElementById("profileUsernameInput").value.trim();
+      if (!uname || !currentUser) return;
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ username: uname, full_name: uname, updated_at: new Date().toISOString() })
+        .eq("id", currentUser.id);
+      if (error) {
+        alert("Error saving username: " + error.message);
+      } else {
+        currentProfile.username = uname;
+        applyRolePermissionsUI();
+        alert("Username updated!");
+      }
+    };
+
+    async function resizeImageToBlob(file, maxDim = 256) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; };
+        reader.onerror = reject;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = maxDim;
+          canvas.height = maxDim;
+          const ctx = canvas.getContext("2d");
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, maxDim, maxDim);
+          canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.86);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    window.handleAvatarUpload = async function(ev) {
+      const file = ev.target.files[0];
+      if (!file || !currentUser) return;
+      try {
+        const jpegBlob = await resizeImageToBlob(file, 256);
+        const filePath = `${currentUser.id}/avatar.jpg`;
+        const { error: upErr } = await supabase.storage
+          .from("avatars")
+          .upload(filePath, jpegBlob, { contentType: "image/jpeg", upsert: true });
+        if (upErr) throw upErr;
+
+        const { data: pubData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+        const publicUrl = `${pubData.publicUrl}?t=${Date.now()}`;
+
+        const { error: dbErr } = await supabase
+          .from("user_profiles")
+          .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq("id", currentUser.id);
+        if (dbErr) throw dbErr;
+
+        currentProfile.avatar_url = publicUrl;
+        applyRolePermissionsUI();
+      } catch (err) {
+        alert("Avatar upload failed: " + (err.message || err));
       }
     };
 
@@ -872,9 +1152,13 @@
       badge.textContent = role.toUpperCase();
       badge.className = "pill " + (isAdmin ? "purple" : (isEditorOrAdmin ? "cyan" : "amber"));
 
-      document.getElementById("userEmailSub").textContent = currentProfile?.email || "";
-      document.getElementById("profileSummaryText").textContent =
-        `Connesso come ${currentProfile?.email} — Ruolo: ${role.toUpperCase()}`;
+      const displayName = currentProfile?.username || currentProfile?.full_name || currentProfile?.email.split("@")[0] || "User";
+      document.getElementById("navUsername").textContent = displayName;
+      document.getElementById("profileUsernameInput").value = displayName;
+      document.getElementById("profileEmailInfo").textContent = `${currentProfile?.email} • Role: ${role.toUpperCase()}`;
+
+      renderAvatarElement(document.getElementById("navAvatarBox"), currentProfile);
+      renderAvatarElement(document.getElementById("profileAvatarPreview"), currentProfile);
 
       document.getElementById("navUsersBtn").style.display = isAdmin ? "inline-flex" : "none";
       document.getElementById("viewerNotice").style.display = isEditorOrAdmin ? "none" : "block";
@@ -900,22 +1184,33 @@
 
       currentUser = session.user;
 
-      // 1. Carica il profilo e il ruolo da public.user_profiles
       const { data: profile, error: profErr } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", currentUser.id)
         .single();
 
-      if (profErr || !profile || !profile.is_active) {
-        showAuthFeedback("Il tuo account è stato disattivato dall'amministratore o non è autorizzato.", true);
+      if (profErr || !profile) {
         await supabase.auth.signOut();
+        showAuthAlert("Access Denied: Your profile was not found. Please contact the Administrator.", "err");
+        return;
+      }
+
+      // Check if user has been banned by Admin
+      if (!profile.is_active) {
+        const reason = profile.ban_reason ? ` Reason: "${profile.ban_reason}".` : "";
+        await supabase.auth.signOut();
+        document.getElementById("authOverlay").style.display = "flex";
+        document.getElementById("appWrap").style.display = "none";
+        showAuthAlert(
+          `Account Temporarily Blocked: Your account has been temporarily suspended by the Administrator.${reason} Please contact the Administrator for assistance.`,
+          "err"
+        );
         return;
       }
 
       currentProfile = profile;
 
-      // 2. Carica le chiavi di configurazione consentite dal ruolo tramite RLS da public.fleet_config
       const { data: cfgRows } = await supabase.from("fleet_config").select("config_key, config_value");
       if (cfgRows) {
         cfgRows.forEach(r => {
@@ -936,7 +1231,7 @@
       connectRealtimeStream();
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         document.getElementById("authOverlay").style.display = "flex";
         document.getElementById("appWrap").style.display = "none";
@@ -984,7 +1279,7 @@
         total_on_sec: Number(dev.total_on_sec || 0),
         last_on_ts: Number(dev.last_on_ts || 0),
         last_off_ts: Number(dev.last_off_ts || 0),
-        fota_status: dev.fota_status || "Pronto",
+        fota_status: dev.fota_status || "Ready",
         first_registered_ms: Number(dev.first_registered_ms || Date.now()),
         last_seen_ms: Number(dev.last_seen_ms || Date.now()),
         updated_at: new Date().toISOString()
@@ -999,7 +1294,7 @@
         .limit(120);
       if (data) {
         eventLogs = data.map(r => ({
-          time: new Date(r.created_at).toLocaleString("it-IT"),
+          time: new Date(r.created_at).toLocaleString("en-GB"),
           hwId: r.hw_id,
           eventType: r.event_type,
           detail: r.detail + (r.actor_email ? ` (${r.actor_email})` : "")
@@ -1011,7 +1306,7 @@
     async function pushEventLog(hwId, eventType, detail) {
       const actor = currentProfile?.email || "";
       eventLogs.unshift({
-        time: new Date().toLocaleString("it-IT"),
+        time: new Date().toLocaleString("en-GB"),
         hwId,
         eventType,
         detail: detail + (actor ? ` (${actor})` : "")
@@ -1030,7 +1325,7 @@
     function renderEventLogs() {
       const box = document.getElementById("eventsLog");
       if (!eventLogs.length) {
-        box.innerHTML = "<div style='color:var(--muted)'>Nessun evento registrato.</div>";
+        box.innerHTML = "<div style='color:var(--muted)'>No activity events recorded yet.</div>";
         return;
       }
       box.innerHTML = eventLogs.map(e =>
@@ -1085,7 +1380,7 @@
         pushEventLog(
           id,
           pkt.event.toUpperCase(),
-          `Stato: ${pkt.power ? "ACCESO" : "SPENTO"} | Modo: ${pkt.mode} | FW: v${pkt.fw}`
+          `State: ${pkt.power ? "ON" : "OFF"} | Mode: ${pkt.mode} | FW: v${pkt.fw}`
         );
       }
 
@@ -1102,7 +1397,7 @@
           const v = await res.json();
           if (v.version) {
             latestGitHubVersion = v.version;
-            document.getElementById("latestFwPill").textContent = `Release Ufficiale: v${latestGitHubVersion}`;
+            document.getElementById("latestFwPill").textContent = `Latest Release: v${latestGitHubVersion}`;
           }
         }
       } catch (_) {}
@@ -1146,7 +1441,7 @@
           ingestTelemetryPacket(pkt, data.time, true);
         } catch (_) {}
       };
-      sseSource.onerror = () => { pill.textContent = "SYNC..."; pill.className = "pill amber"; };
+      sseSource.onerror = () => { pill.textContent = "RECONNECTING"; pill.className = "pill amber"; };
     }
 
     window.probeLocalDevice = async function() {
@@ -1159,7 +1454,7 @@
         ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000), true);
         openDeviceModal(pkt.hw_id);
       } catch (err) {
-        alert(`Impossibile contattare http://${ip}/api/status`);
+        alert(`Could not reach http://${ip}/api/status`);
       }
     };
 
@@ -1167,11 +1462,11 @@
       if (ev) ev.stopPropagation();
       const role = currentProfile?.role || "viewer";
       if (role === "viewer" || !cmdPrefix) {
-        alert("Accesso negato: il ruolo Viewer è di sola lettura.");
+        alert("Permission denied: Viewer accounts are read-only.");
         return;
       }
       if (cmdObj.action && role !== "admin") {
-        alert("Accesso negato: solo un Admin può eseguire azioni di sistema (FOTA / Riavvio).");
+        alert("Permission denied: only Admins can trigger system actions (FOTA / Reboot).");
         return;
       }
 
@@ -1211,50 +1506,72 @@
       if (txt) window.broadcastCommand({ scroll: txt });
     };
 
-    // --- GESTIONE UTENTI E RUOLI (ADMIN ONLY) ---
+    // --- ADMIN USERS, ROLES & BAN MANAGEMENT ---
     window.loadUsersList = async function() {
       if (currentProfile?.role !== "admin") return;
       const { data: users } = await supabase.from("user_profiles").select("*").order("created_at", { ascending: true });
-      const { data: invites } = await supabase.from("role_invites").select("*").order("created_at", { ascending: false });
+      const { data: invites } = await supabase.from("role_invites").select("*").is("accepted_at", null).order("created_at", { ascending: false });
 
       const tbody = document.getElementById("usersTableBody");
       let html = "";
 
       if (users) {
-        html += users.map(u => `
-          <tr>
-            <td><strong>${u.full_name || "Utente"}</strong><br><span style="color:var(--muted);font-size:11.5px;">${u.email}</span></td>
-            <td>
-              <select onchange="changeUserRole('${u.id}', this.value)" ${u.id === currentUser.id ? "disabled" : ""}>
-                <option value="viewer" ${u.role === "viewer" ? "selected" : ""}>Viewer</option>
-                <option value="editor" ${u.role === "editor" ? "selected" : ""}>Editor</option>
-                <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
-              </select>
-            </td>
-            <td><span class="pill ${u.is_active ? "green" : "red"}">${u.is_active ? "Attivo" : "Sospeso"}</span></td>
-            <td>${new Date(u.created_at).toLocaleDateString("it-IT")}</td>
-            <td>
-              ${u.id !== currentUser.id ? `
-                <button onclick="toggleUserActive('${u.id}', ${!u.is_active})">${u.is_active ? "Sospendi" : "Riattiva"}</button>
-              ` : `<span style="color:var(--muted);font-size:11.5px;">Tu (Admin)</span>`}
-            </td>
-          </tr>
-        `).join("");
+        html += users.map(u => {
+          const initial = ((u.username || u.email || "U")[0]).toUpperCase();
+          const avHtml = u.avatar_url
+            ? `<img src="${u.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />`
+            : initial;
+          return `
+            <tr>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="avatar-img" style="width:32px;height:32px;">${avHtml}</div>
+                  <div>
+                    <strong>${u.username || u.full_name || "User"}</strong><br>
+                    <span style="color:var(--muted);font-size:11.5px;">${u.email}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <select onchange="changeUserRole('${u.id}', this.value)" ${u.id === currentUser.id ? "disabled" : ""}>
+                  <option value="viewer" ${u.role === "viewer" ? "selected" : ""}>Viewer</option>
+                  <option value="editor" ${u.role === "editor" ? "selected" : ""}>Editor</option>
+                  <option value="admin" ${u.role === "admin" ? "selected" : ""}>Admin</option>
+                </select>
+              </td>
+              <td>
+                <span class="pill ${u.is_active ? "green" : "red"}">${u.is_active ? "Active" : "Banned"}</span>
+                ${!u.is_active && u.ban_reason ? `<div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${u.ban_reason}</div>` : ""}
+              </td>
+              <td>${new Date(u.created_at).toLocaleDateString("en-GB")}</td>
+              <td>
+                ${u.id !== currentUser.id ? `
+                  <button class="${u.is_active ? 'btn-danger' : 'btn-primary'}" onclick="toggleUserBan('${u.id}', ${u.is_active})">
+                    ${u.is_active ? "Ban User" : "Unban User"}
+                  </button>
+                ` : `<span style="color:var(--muted);font-size:11.5px;">Current Admin</span>`}
+              </td>
+            </tr>
+          `;
+        }).join("");
       }
 
       if (invites && invites.length > 0) {
         html += invites.map(inv => `
           <tr>
-            <td><em>${inv.email}</em><br><span style="color:var(--amber);font-size:11px;">In attesa di registrazione</span></td>
+            <td>
+              <strong>${inv.email}</strong><br>
+              <span style="color:var(--amber);font-size:11px;">Pre-authorized (Pending user registration)</span>
+            </td>
             <td><span class="pill cyan">${inv.role}</span></td>
-            <td><span class="pill amber">Pre-autorizzato</span></td>
-            <td>${new Date(inv.created_at).toLocaleDateString("it-IT")}</td>
-            <td><button class="btn-danger" onclick="deleteRoleInvite('${inv.email}')">Revoca</button></td>
+            <td><span class="pill amber">Invited</span></td>
+            <td>${new Date(inv.created_at).toLocaleDateString("en-GB")}</td>
+            <td><button class="btn-danger" onclick="deleteRoleInvite('${inv.email}')">Revoke Invite</button></td>
           </tr>
         `).join("");
       }
 
-      tbody.innerHTML = html || "<tr><td colspan='5' style='color:var(--muted)'>Nessun utente trovato.</td></tr>";
+      tbody.innerHTML = html || "<tr><td colspan='5' style='color:var(--muted)'>No users found.</td></tr>";
     };
 
     window.changeUserRole = async function(userId, newRole) {
@@ -1262,16 +1579,26 @@
         .from("user_profiles")
         .update({ role: newRole, updated_at: new Date().toISOString() })
         .eq("id", userId);
-      if (error) alert("Errore: " + error.message);
+      if (error) alert("Error: " + error.message);
       else window.loadUsersList();
     };
 
-    window.toggleUserActive = async function(userId, activeState) {
+    window.toggleUserBan = async function(userId, currentlyActive) {
+      let reason = "";
+      if (currentlyActive) {
+        const r = prompt("Optional reason for temporarily blocking this user:", "Suspended by Administrator");
+        if (r === null) return;
+        reason = r.trim();
+      }
       const { error } = await supabase
         .from("user_profiles")
-        .update({ is_active: activeState, updated_at: new Date().toISOString() })
+        .update({
+          is_active: !currentlyActive,
+          ban_reason: reason,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", userId);
-      if (error) alert("Errore: " + error.message);
+      if (error) alert("Error: " + error.message);
       else window.loadUsersList();
     };
 
@@ -1280,7 +1607,6 @@
       const role = document.getElementById("inviteRoleSelect").value;
       if (!email) return;
 
-      // Controlla se l'utente è già registrato in user_profiles
       const { data: existing } = await supabase
         .from("user_profiles")
         .select("id")
@@ -1293,9 +1619,10 @@
         const { error } = await supabase.from("role_invites").upsert({
           email,
           role,
+          accepted_at: null,
           invited_by: currentUser.id
         });
-        if (error) alert("Errore: " + error.message);
+        if (error) alert("Error: " + error.message);
       }
       document.getElementById("inviteEmailInput").value = "";
       window.loadUsersList();
@@ -1308,25 +1635,25 @@
 
     function fmtTs(epochSec) {
       epochSec = Number(epochSec) || 0;
-      if (epochSec < 1700000000) return "Mai / N/D";
-      return new Date(epochSec * 1000).toLocaleString("it-IT");
+      if (epochSec < 1700000000) return "Never / N/A";
+      return new Date(epochSec * 1000).toLocaleString("en-GB");
     }
 
     function fmtDur(sec) {
       sec = Number(sec) || 0;
       const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60);
-      if (d > 0) return `${d}g ${h}h ${m}m`;
+      if (d > 0) return `${d}d ${h}h ${m}m`;
       if (h > 0) return `${h}h ${m}m`;
       return `${m}m ${sec % 60}s`;
     }
 
     function fmtRelTime(ms) {
-      if (!ms) return "N/D";
+      if (!ms) return "N/A";
       const diffSec = Math.max(0, Math.floor((Date.now() - ms) / 1000));
-      if (diffSec < 60) return `${diffSec}s fa`;
-      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m fa`;
-      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h fa`;
-      return new Date(Number(ms)).toLocaleDateString("it-IT");
+      if (diffSec < 60) return `${diffSec}s ago`;
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+      if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+      return new Date(Number(ms)).toLocaleDateString("en-GB");
     }
 
     // --- MINIMAL CARDS RENDERER ---
@@ -1360,7 +1687,7 @@
       const grid = document.getElementById("devicesGrid");
       if (!filtered.length) {
         grid.innerHTML = `<div class="panel-box" style="grid-column:1/-1; text-align:center; color:var(--muted);">
-          Nessun dispositivo Smarty registrato. Appena uno Smarty con v1.4.0+ si connette a Internet, apparirà qui automaticamente.
+          No Smarty devices registered yet. Any Smarty running firmware v1.4.0+ will automatically appear here as soon as it connects to Wi-Fi.
         </div>`;
         return;
       }
@@ -1378,21 +1705,21 @@
                   <span class="dot ${isOnline ? "on" : "off"}"></span>
                   <span>${d.alias || d.hw_id}</span>
                 </div>
-                <div class="mc-sub">${d.hw_id} &bull; Visto ${fmtRelTime(d.last_seen_ms)}</div>
+                <div class="mc-sub">${d.hw_id} &bull; Seen ${fmtRelTime(d.last_seen_ms)}</div>
               </div>
               <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"}</span>
             </div>
 
             <div class="mc-status-row">
-              <span><span class="color-dot" style="background:${d.power ? hex : '#334155'}"></span>${d.power ? (d.mode || "ON") : "Spento"}</span>
+              <span><span class="color-dot" style="background:${d.power ? hex : '#334155'}"></span>${d.power ? (d.mode || "ON") : "Standby (OFF)"}</span>
               <span>${d.brightness ?? 100}% &bull; ${Number(d.temp || 0).toFixed(0)}°C</span>
             </div>
 
             <div class="mc-footer">
               <button class="${d.power ? '' : 'btn-primary'}" ${canControl ? "" : "disabled"} onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}}, event)">
-                ${d.power ? "Spegni" : "Accendi"}
+                ${d.power ? "Turn OFF" : "Turn ON"}
               </button>
-              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Dettagli &rarr;</button>
+              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Inspect &rarr;</button>
             </div>
           </div>
         `;
@@ -1422,7 +1749,7 @@
       const hex = d.hex || "#10b981";
 
       document.getElementById("mTitle").textContent = d.alias || d.hw_id;
-      document.getElementById("mSubtitle").textContent = `Hardware ID: ${d.hw_id} • Profilo: ${d.profile || "Smarty_1"} • MAC: ${d.mac || "--"}`;
+      document.getElementById("mSubtitle").textContent = `Hardware ID: ${d.hw_id} • Profile: ${d.profile || "Smarty_1"} • MAC: ${d.mac || "--"}`;
 
       const pill = document.getElementById("mOnlinePill");
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
@@ -1437,7 +1764,7 @@
       document.getElementById("mMatrix").innerHTML = pxHtml;
 
       const pwrBtn = document.getElementById("mPwrBtn");
-      pwrBtn.textContent = d.power ? "SPEGNI DISPOSITIVO (ATTUALMENTE ON)" : "ACCENDI DISPOSITIVO (ATTUALMENTE OFF)";
+      pwrBtn.textContent = d.power ? "TURN OFF DEVICE (CURRENTLY ON)" : "TURN ON DEVICE (CURRENTLY OFF)";
       pwrBtn.className = (d.power ? "btn-danger" : "btn-primary") + " role-editor";
 
       document.getElementById("mColorPicker").value = hex.toLowerCase();
@@ -1447,24 +1774,24 @@
       document.getElementById("mSpeedLbl").textContent = (d.speed ?? 75) + "%";
 
       document.getElementById("mTelemGrid").innerHTML = `
-        <div class="detail-cell"><span>Ultima Volta Connesso</span><strong>${d.last_seen_ms ? new Date(Number(d.last_seen_ms)).toLocaleString("it-IT") : "N/D"}</strong></div>
-        <div class="detail-cell"><span>Prima Associazione</span><strong>${d.first_registered_ms ? new Date(Number(d.first_registered_ms)).toLocaleString("it-IT") : "N/D"}</strong></div>
-        <div class="detail-cell"><span>Quando Acceso (Ultimo ON)</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
-        <div class="detail-cell"><span>Quando Spento (Ultimo OFF)</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
-        <div class="detail-cell"><span>Tempo Totale Acceso</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
-        <div class="detail-cell"><span>Uptime Sessione / Riavvii</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boot)</strong></div>
-        <div class="detail-cell"><span>Rete Wi-Fi &amp; Segnale</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
-        <div class="detail-cell"><span>Web Server Locale</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">http://${d.wifi_ip || "--"} &nearr;</a></strong></div>
-        <div class="detail-cell"><span>Temperatura SoC ESP32-S3</span><strong>${Number(d.temp || 0).toFixed(1)} °C</strong></div>
-        <div class="detail-cell"><span>Memoria RAM (Free / Min)</span><strong>${Math.round((d.heap_free || 0)/1024)} KB / ${Math.round((d.heap_min || 0)/1024)} KB</strong></div>
+        <div class="detail-cell"><span>Last Connected</span><strong>${d.last_seen_ms ? new Date(Number(d.last_seen_ms)).toLocaleString("en-GB") : "N/A"}</strong></div>
+        <div class="detail-cell"><span>First Registered</span><strong>${d.first_registered_ms ? new Date(Number(d.first_registered_ms)).toLocaleString("en-GB") : "N/A"}</strong></div>
+        <div class="detail-cell"><span>Last Powered ON</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
+        <div class="detail-cell"><span>Last Powered OFF</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
+        <div class="detail-cell"><span>Cumulative On-Time</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
+        <div class="detail-cell"><span>Session Uptime / Boots</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boots)</strong></div>
+        <div class="detail-cell"><span>Wi-Fi Network &amp; RSSI</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
+        <div class="detail-cell"><span>Local Web Hub</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">http://${d.wifi_ip || "--"} &nearr;</a></strong></div>
+        <div class="detail-cell"><span>ESP32-S3 SoC Temp</span><strong>${Number(d.temp || 0).toFixed(1)} °C</strong></div>
+        <div class="detail-cell"><span>RAM Heap (Free / Min)</span><strong>${Math.round((d.heap_free || 0)/1024)} KB / ${Math.round((d.heap_min || 0)/1024)} KB</strong></div>
       `;
 
       document.getElementById("mSysGrid").innerHTML = `
-        <div class="detail-cell"><span>Versione Installata</span><strong>v${d.fw || "--"} (${isUpToDate ? "Aggiornato" : "Da aggiornare a v" + latestGitHubVersion})</strong></div>
-        <div class="detail-cell"><span>Partizione OTA Attiva</span><strong>${d.ota_part || "app0"} (Dual-OTA Rollback)</strong></div>
-        <div class="detail-cell"><span>Stato Modulo FOTA</span><strong>${d.fota_status || "Pronto"}</strong></div>
-        <div class="detail-cell"><span>Supporto FOTA USB Nativo</span><strong>${d.serial_ota ? "Attivo (921600 baud CRC16)" : "Non presente (< v1.5.0)"}</strong></div>
-        <div class="detail-cell"><span>Stato Cloud SinricPro / Alexa</span><strong>${d.cloud_online ? "Connesso (ONLINE)" : "Disconnesso"}</strong></div>
+        <div class="detail-cell"><span>Installed Firmware</span><strong>v${d.fw || "--"} (${isUpToDate ? "Up to date" : "Update v" + latestGitHubVersion + " available"})</strong></div>
+        <div class="detail-cell"><span>Active OTA Partition</span><strong>${d.ota_part || "app0"} (Dual-OTA Rollback)</strong></div>
+        <div class="detail-cell"><span>FOTA Engine Status</span><strong>${d.fota_status || "Ready"}</strong></div>
+        <div class="detail-cell"><span>Native USB FOTA</span><strong>${d.serial_ota ? "Supported (921600 baud CRC16)" : "Legacy (< v1.5.0)"}</strong></div>
+        <div class="detail-cell"><span>SinricPro / Alexa Cloud</span><strong>${d.cloud_online ? "Connected (ONLINE)" : "Disconnected"}</strong></div>
         <div class="detail-cell"><span>SinricPro Device ID</span><strong>${d.sinric_id || "--"}</strong></div>
       `;
     }
@@ -1492,7 +1819,7 @@
       if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
       if (currentProfile?.role === "viewer") return;
       const cur = fleetRegistry[selectedHwId].alias || selectedHwId;
-      const next = prompt("Nome/etichetta per questo Smarty:", cur);
+      const next = prompt("Enter a custom label for this Smarty unit:", cur);
       if (next && next.trim()) {
         fleetRegistry[selectedHwId].alias = next.trim();
         await upsertDeviceToSupabase(fleetRegistry[selectedHwId]);
@@ -1503,7 +1830,7 @@
 
     window.removeCurrentDevice = async function() {
       if (!selectedHwId || currentProfile?.role !== "admin") return;
-      if (!confirm(`Rimuovere ${selectedHwId} dal database Supabase?`)) return;
+      if (!confirm(`Remove ${selectedHwId} from the Supabase fleet registry?`)) return;
       await supabase.from("smarty_devices").delete().eq("hw_id", selectedHwId);
       delete fleetRegistry[selectedHwId];
       closeDeviceModal();
@@ -1534,13 +1861,12 @@
           }
           renderFleet();
         } catch (_) {
-          alert("File JSON non valido");
+          alert("Invalid JSON backup file.");
         }
       };
       reader.readAsText(f);
     };
 
-    // Avvio automatico se sessione Supabase già attiva
     bootAuthenticatedSession();
     setInterval(() => renderFleet(), 15000);
   </script>
