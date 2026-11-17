@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smarty Web Flasher — MAICXEN STUDIOS</title>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --border: rgba(56, 189, 248, 0.22);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.35);
+      --cyan: #06b6d4;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #112233 0%, var(--bg-dark) 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(6, 182, 212, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .vendor-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Virtual 23x5 LED Matrix Preview */
+    .matrix-wrapper {
+      background: #05070c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.9);
+    }
+
+    .led-matrix {
+      display: grid;
+      grid-template-columns: repeat(23, 1fr);
+      gap: 4px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    .led-pixel {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #141a26;
+      transition: background 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .led-pixel.on-green {
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .led-pixel.on-blue {
+      background: #06b6d4;
+      box-shadow: 0 0 8px #06b6d4;
+    }
+
+    .led-pixel.on-err {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    /* Firmware Info Box */
+    .info-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .version-pill {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .safe-pill {
+      background: rgba(6, 182, 212, 0.14);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .release-notes {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    /* Action Button */
+    .btn-flash {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #04130d;
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px var(--accent-glow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-flash:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-flash:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Progress Bar */
+    .progress-section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--accent));
+      border-radius: 999px;
+      transition: width 0.15s ease;
+    }
+
+    /* Status Alert */
+    .status-banner {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .status-banner.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    .status-banner.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .status-banner.warning {
+      display: block;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fcd34d;
+    }
+
+    /* Instructions & Console */
+    .steps {
+      margin-top: 22px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 14px 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .steps ol {
+      padding-left: 18px;
+    }
+
+    details.console-details {
+      margin-top: 16px;
+    }
+
+    details.console-details summary {
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px 0;
+    }
+
+    .console-box {
+      margin-top: 8px;
+      background: #05070c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      color: #a7f3d0;
+      height: 170px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="vendor-badge">MAICXEN STUDIOS</span>
+      <h1>Smarty ESP32-S3 Web Flasher</h1>
+      <p class="subtitle">Aggiornamento diretto via USB WebSerial senza cancellare la memoria NVS (Wi-Fi e stato)</p>
+    </div>
+
+    <div class="matrix-wrapper">
+      <div class="led-matrix" id="ledMatrix"></div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-row">
+        <div>
+          <strong>Ultimo Firmware Disponibile:</strong>
+          <span class="version-pill" id="fwVersion">Caricamento...</span>
+        </div>
+        <span class="safe-pill">No Flash Erase (NVS Preservata)</span>
+      </div>
+      <div class="release-notes" id="fwNotes">
+        Connessione ai metadati del firmware in corso...
+      </div>
+    </div>
+
+    <button class="btn-flash" id="flashBtn">
+      <span>Scegli Porta USB e Installa Firmware</span>
+    </button>
+
+    <div class="progress-section" id="progressSection">
+      <div class="progress-header">
+        <span id="progressStep">Preparazione...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="status-banner" id="statusBanner"></div>
+
+    <div class="steps">
+      <strong>Come procedere:</strong>
+      <ol>
+        <li>Collega <strong>Smarty (ESP32-S3)</strong> al computer tramite cavo USB dati (usa <strong>Chrome</strong>, <strong>Edge</strong> o <strong>Opera</strong> su PC/Mac).</li>
+        <li>Clicca su <strong>"Scegli Porta USB e Installa Firmware"</strong> e seleziona la porta seriale USB dall'elenco del browser.</li>
+        <li>L'aggiornamento viene scritto direttamente senza cancellare la partizione NVS (le credenziali Wi-Fi e le impostazioni restano salvate) e il dispositivo si riavvierà automaticamente.</li>
+      </ol>
+    </div>
+
+    <details class="console-details" id="consoleDetails">
+      <summary>Mostra log dettagliato esptool-js</summary>
+      <div class="console-box" id="consoleLog"></div>
+    </details>
+  </div>
+
+  <script type="module">
+    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.5/bundle.js";
+
+    const MATRIX_W = 23;
+    const MATRIX_H = 5;
+
+    // Bitmap 23x5 "START" (Smarty logo)
+    const START_BITMAP = [
+      1,1,1,0,1,0,1,0,0,1,0,0,1,1,0,0,1,1,1,0,1,0,1,
+      1,0,0,0,1,1,1,0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,
+      1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,0,1,0,0,0,1,0,
+      0,0,1,0,1,0,1,0,1,0,1,0,1,1,0,0,0,1,0,0,0,1,0,
+      1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,0,0,1,0
+    ];
+
+    const matrixEl = document.getElementById("ledMatrix");
+    const pixels = [];
+    for (let i = 0; i < MATRIX_W * MATRIX_H; i++) {
+      const d = document.createElement("div");
+      d.className = "led-pixel";
+      matrixEl.appendChild(d);
+      pixels.push(d);
+    }
+
+    function renderIdleBitmap(isError = false) {
+      for (let i = 0; i < MATRIX_W * MATRIX_H; i++) {
+        pixels[i].className = "led-pixel" + (START_BITMAP[i] ? (isError ? " on-err" : " on-green") : "");
+      }
+    }
+
+    function renderMatrixProgress(pct) {
+      const filledCols = Math.floor((pct * MATRIX_W) / 100);
+      for (let r = 0; r < MATRIX_H; r++) {
+        for (let c = 0; c < MATRIX_W; c++) {
+          const idx = r * MATRIX_W + c;
+          if (pct >= 100) {
+            pixels[idx].className = "led-pixel on-green";
+          } else if (c < filledCols) {
+            pixels[idx].className = (r >= 1 && r <= 3) ? "led-pixel on-green" : "led-pixel on-blue";
+          } else if (r === 0 || r === MATRIX_H - 1) {
+            pixels[idx].className = "led-pixel on-blue";
+          } else {
+            pixels[idx].className = "led-pixel";
+          }
+        }
+      }
+    }
+
+    renderIdleBitmap();
+
+    const fwVersionEl = document.getElementById("fwVersion");
+    const fwNotesEl = document.getElementById("fwNotes");
+    const flashBtn = document.getElementById("flashBtn");
+    const progressSection = document.getElementById("progressSection");
+    const progressStep = document.getElementById("progressStep");
+    const progressPct = document.getElementById("progressPct");
+    const progressFill = document.getElementById("progressFill");
+    const statusBanner = document.getElementById("statusBanner");
+    const consoleLog = document.getElementById("consoleLog");
+    const consoleDetails = document.getElementById("consoleDetails");
+
+    let manifestData = null;
+
+    function logLine(msg) {
+      consoleLog.textContent += msg + "\n";
+      consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    function setStatus(type, message) {
+      if (!type) {
+        statusBanner.className = "status-banner";
+        statusBanner.textContent = "";
+        return;
+      }
+      statusBanner.className = `status-banner ${type}`;
+      statusBanner.textContent = message;
+    }
+
+    function updateProgress(stepText, pct) {
+      const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+      progressSection.classList.add("active");
+      progressStep.textContent = stepText;
+      progressPct.textContent = `${clamped}%`;
+      progressFill.style.width = `${clamped}%`;
+      renderMatrixProgress(clamped);
+    }
+
+    const espLoaderTerminal = {
+      clean() {
+        consoleLog.textContent = "";
+      },
+      writeLine(data) {
+        logLine(data);
+      },
+      write(data) {
+        consoleLog.textContent += data;
+        consoleLog.scrollTop = consoleLog.scrollHeight;
+      }
+    };
+
+    async function loadManifest() {
+      try {
+        const res = await fetch(`./manifest.json?cb=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        manifestData = await res.json();
+        fwVersionEl.textContent = `v${manifestData.version}`;
+        fwNotesEl.textContent = manifestData.release_notes || "Pronto per l'installazione via WebSerial.";
+      } catch (err) {
+        fwVersionEl.textContent = "Errore";
+        fwNotesEl.textContent = "Impossibile caricare manifest.json: " + err.message;
+        flashBtn.disabled = true;
+      }
+    }
+
+    if (!("serial" in navigator)) {
+      setStatus(
+        "warning",
+        "Il tuo browser non supporta WebSerial. Apri questo link con Google Chrome, Microsoft Edge o Opera su PC/Mac."
+      );
+      flashBtn.disabled = true;
+    } else {
+      loadManifest();
+    }
+
+    async function fetchBinaryAsBstr(url, esploader) {
+      const res = await fetch(`${url}?cb=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`Impossibile scaricare ${url} (HTTP ${res.status})`);
+      }
+      const buf = await res.arrayBuffer();
+      return esploader.ui8ToBstr(new Uint8Array(buf));
+    }
+
+    flashBtn.addEventListener("click", async () => {
+      if (!manifestData || !manifestData.builds || !manifestData.builds[0]) return;
+
+      let port = null;
+      let transport = null;
+
+      try {
+        setStatus(null, "");
+        // 1. Scelta porta USB da parte dell'utente
+        port = await navigator.serial.requestPort();
+
+        flashBtn.disabled = true;
+        espLoaderTerminal.clean();
+        updateProgress("Connessione a ESP32-S3 in corso...", 2);
+
+        transport = new Transport(port, true);
+        const esploader = new ESPLoader({
+          transport,
+          baudrate: 460800,
+          terminal: espLoaderTerminal
+        });
+
+        const chipName = await esploader.main();
+        logLine(`Chip rilevato: ${chipName}`);
+
+        // 2. Download dei file binari dal manifest
+        const parts = manifestData.builds[0].parts;
+        const fileArray = [];
+        for (let i = 0; i < parts.length; i++) {
+          const p = parts[i];
+          updateProgress(`Download ${p.path}...`, 5 + Math.round((i / parts.length) * 10));
+          logLine(`Download ${p.path} (offset 0x${p.offset.toString(16)})...`);
+          const bstr = await fetchBinaryAsBstr(p.path, esploader);
+          fileArray.push({
+            data: bstr,
+            address: p.offset
+          });
+        }
+
+        // Calcolo peso totale per barra di progresso unificata
+        const totalLengths = fileArray.map((f) => f.data.length);
+        const grandTotal = totalLengths.reduce((acc, v) => acc + v, 0);
+
+        // 3. Scrittura Flash SENZA cancellare l'intera flash (eraseAll: false -> NVS intatta!)
+        updateProgress("Scrittura firmware su ESP32-S3...", 15);
+        await esploader.writeFlash({
+          fileArray,
+          flashSize: "keep",
+          flashMode: "keep",
+          flashFreq: "keep",
+          eraseAll: false,
+          compress: true,
+          reportProgress: (fileIndex, written, total) => {
+            let prevBytes = 0;
+            for (let k = 0; k < fileIndex; k++) {
+              prevBytes += totalLengths[k];
+            }
+            const currentFileEstimate = total > 0 ? (written / total) * totalLengths[fileIndex] : 0;
+            const overallRatio = (prevBytes + currentFileEstimate) / grandTotal;
+            const pct = 15 + overallRatio * 83;
+            const partLabel = parts[fileIndex]?.label || parts[fileIndex]?.path || "Partizione";
+            updateProgress(`Scrittura ${partLabel}...`, pct);
+          }
+        });
+
+        updateProgress("Riavvio automatico di Smarty...", 99);
+        logLine("Reset hardware ESP32-S3...");
+        await transport.setDTR(false);
+        await transport.setRTS(true);
+        await new Promise((r) => setTimeout(r, 120));
+        await transport.setRTS(false);
+        await transport.disconnect();
+        transport = null;
+
+        updateProgress("Installazione completata!", 100);
+        setStatus(
+          "success",
+          `Firmware v${manifestData.version} installato con successo! La memoria NVS non è stata cancellata e Smarty si sta riavviando.`
+        );
+      } catch (err) {
+        consoleDetails.open = true;
+        renderIdleBitmap(true);
+        logLine(`ERRORE: ${err.message || err}`);
+        setStatus(
+          "error",
+          `Installazione interrotta: ${err.message || err}. Verifica che il cavo USB sia dati e che nessun monitor seriale sia aperto.`
+        );
+        if (transport) {
+          try {
+            await transport.disconnect();
+          } catch (_) {}
+        }
+      } finally {
+        flashBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
