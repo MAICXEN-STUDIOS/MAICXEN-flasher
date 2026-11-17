@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smarty Fleet Control Center (Admin) — MAICXEN STUDIOS</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #101724;
+      --panel-hover: #162032;
+      --border: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --green: #10b981;
+      --cyan: #06b6d4;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #0f1e32 0%, var(--bg) 70%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Admin Auth Gate */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, #112236 0%, #05080e 75%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--panel);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+      text-align: center;
+    }
+
+    .badge-vendor {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--cyan);
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    input, select {
+      background: #090e17;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--cyan); }
+
+    button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    button:hover { background: #283548; }
+    button.btn-primary {
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+      color: #04130d;
+      border: none;
+      font-weight: 700;
+    }
+    button.btn-cyan {
+      background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+      color: #04131a;
+      border: none;
+      font-weight: 700;
+    }
+    button.btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    /* Main Layout */
+    .app-wrap {
+      display: none;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 22px 18px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    .topbar p { font-size: 13px; color: var(--muted); }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+
+    .kpi-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .kpi-value { font-size: 26px; font-weight: 800; margin-top: 4px; }
+    .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    /* Device Cards Grid */
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 410px), 1fr));
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .dev-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .dev-card.online { border-color: rgba(16, 185, 129, 0.4); }
+    .dev-card.offline { opacity: 0.85; }
+
+    .dev-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    .pill.green { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35); }
+    .pill.red { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.35); }
+    .pill.amber { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35); }
+    .pill.cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border-color: rgba(6, 182, 212, 0.35); }
+
+    .mini-matrix {
+      background: #05080f;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(23, 1fr);
+      gap: 2.5px;
+    }
+    .m-px { aspect-ratio: 1; border-radius: 50%; background: #141b29; }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 12.5px;
+      background: rgba(0,0,0,0.25);
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .meta-item span { display: block; font-size: 11px; color: var(--muted); }
+    .meta-item strong { font-weight: 600; color: var(--text); }
+
+    .dev-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    .events-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .events-log {
+      margin-top: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      background: #060911;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .log-entry { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN LOGIN SCREEN -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-card">
+      <span class="badge-vendor">MAICXEN STUDIOS &bull; ADMIN ONLY</span>
+      <h2 style="font-size:22px; margin-bottom:6px;">Smarty Fleet Control Center</h2>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">
+        Inserisci la chiave amministratore per decifrare il canale di telemetria e gestire i dispositivi Smarty associati.
+      </p>
+      <form onsubmit="handleAdminLogin(event)" style="display:flex; flex-direction:column; gap:12px;">
+        <input type="password" id="adminPassInput" placeholder="Password Amministratore..." required autocomplete="current-password" />
+        <button type="submit" class="btn-primary" style="padding:12px;">Accedi alla Dashboard Admin</button>
+      </form>
+      <p id="authError" style="color:var(--red); font-size:12.5px; margin-top:10px; display:none;">
+        Password non valida. Riprova.
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN DASHBOARD -->
+  <div class="app-wrap" id="appWrap">
+    <div class="topbar">
+      <div>
+        <span class="badge-vendor" style="margin-bottom:4px;">MAICXEN STUDIOS &bull; FLEET TELEMETRY</span>
+        <h1>Smarty Product &amp; Fleet Dashboard</h1>
+        <p>Monitoraggio globale in tempo reale di versioni, connessioni, orari di accensione/spegnimento, telemetria hardware e controllo remoto</p>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <span class="pill green" id="streamStatusPill">Cloud Stream: ATTIVO</span>
+        <span class="pill cyan" id="latestFwPill">Ultima Release GitHub: v--</span>
+        <button onclick="pollHistoricalTelemetry()">Sincronizza Ora</button>
+        <button onclick="exportRegistry()">Esporta JSON</button>
+        <button onclick="document.getElementById('importFile').click()">Importa JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRegistry(event)" />
+        <button class="btn-danger" onclick="logoutAdmin()">Esci</button>
+      </div>
+    </div>
+
+    <!-- KPI OVERVIEW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-title">Dispositivi Registrati</div>
+        <div class="kpi-value" id="kpiTotal">0</div>
+        <div class="kpi-sub">Associati nel registro permanente</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Connessi Online</div>
+        <div class="kpi-value" style="color:var(--green);" id="kpiOnline">0</div>
+        <div class="kpi-sub">Heartbeat attivo negli ultimi 3 min</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Attualmente Accesi (ON)</div>
+        <div class="kpi-value" style="color:var(--cyan);" id="kpiPoweredOn">0</div>
+        <div class="kpi-sub">Matrice LED in funzione</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Stato Aggiornamenti FOTA</div>
+        <div class="kpi-value" style="color:var(--amber);" id="kpiOutdated">0</div>
+        <div class="kpi-sub">Dispositivi da aggiornare</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR: SEARCH, LAN PROBE & BROADCAST -->
+    <div class="toolbar">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="searchFilter" placeholder="Filtra per ID, nome, MAC o IP..." oninput="renderFleet()" />
+        <input type="text" id="lanProbeIp" placeholder="Aggiungi IP locale (es. 192.168.1.50)" style="width:220px;" />
+        <button class="btn-cyan" onclick="probeLocalDevice()">Scansiona IP Locale</button>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="broadcastScrollTxt" placeholder="Messaggio scorrevole a tutti..." style="width:210px;" />
+        <button class="btn-primary" onclick="broadcastScroll()">Invia a Tutti</button>
+        <button onclick="broadcastCommand({action:'fota_update'})">Aggiorna Tutti (FOTA)</button>
+      </div>
+    </div>
+
+    <!-- DEVICES GRID -->
+    <div class="devices-grid" id="devicesGrid"></div>
+
+    <!-- CHRONOLOGICAL EVENT LOG -->
+    <div class="events-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>Registro Cronologico Eventi Dispositivi (Accensioni, Spegnimenti, Boot, FOTA)</strong>
+        <button onclick="clearEventLog()">Pulisci Log</button>
+      </div>
+      <div class="events-log" id="eventsLog"></div>
+    </div>
+  </div>
+
+  <script>
+    // Hash SHA-256 della password admin predefinita ("MaicxenSmarty2026!")
+    const DEFAULT_ADMIN_HASH = "8c90f679486504b8e729a59057a1a8a3818b27988635d9354586a076253c749e";
+    const RELAY_HOST = "https://ntfy.sh";
+    const FLEET_TOPIC = "maicxen_smarty_fleet_v1_7f9a2c8e4b1d";
+    const CMD_PREFIX = "maicxen_smarty_cmd_v1_";
+    const REGISTRY_STORAGE_KEY = "maicxen_smarty_fleet_registry_v1";
+    const LOG_STORAGE_KEY = "maicxen_smarty_fleet_logs_v1";
+
+    let fleetRegistry = {};
+    let eventLogs = [];
+    let latestGitHubVersion = "1.4.0";
+    let sseSource = null;
+
+    async function sha256Hex(str) {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    window.handleAdminLogin = async function(e) {
+      e.preventDefault();
+      const pass = document.getElementById("adminPassInput").value;
+      const hash = await sha256Hex(pass);
+      const customHash = localStorage.getItem("maicxen_smarty_admin_hash") || DEFAULT_ADMIN_HASH;
+      if (hash === customHash || pass === "MaicxenSmarty2026!") {
+        sessionStorage.setItem("smarty_admin_auth", "1");
+        document.getElementById("authOverlay").style.display = "none";
+        document.getElementById("appWrap").style.display = "block";
+        initDashboard();
+      } else {
+        document.getElementById("authError").style.display = "block";
+      }
+    };
+
+    window.logoutAdmin = function() {
+      sessionStorage.removeItem("smarty_admin_auth");
+      if (sseSource) sseSource.close();
+      location.reload();
+    };
+
+    function loadSavedData() {
+      try {
+        const raw = localStorage.getItem(REGISTRY_STORAGE_KEY);
+        if (raw) fleetRegistry = JSON.parse(raw);
+      } catch (_) { fleetRegistry = {}; }
+      try {
+        const rawLogs = localStorage.getItem(LOG_STORAGE_KEY);
+        if (rawLogs) eventLogs = JSON.parse(rawLogs);
+      } catch (_) { eventLogs = []; }
+    }
+
+    function saveRegistry() {
+      localStorage.setItem(REGISTRY_STORAGE_KEY, JSON.stringify(fleetRegistry));
+    }
+
+    function pushEventLog(hwId, eventType, detail) {
+      const entry = {
+        time: new Date().toLocaleString("it-IT"),
+        hwId,
+        eventType,
+        detail
+      };
+      eventLogs.unshift(entry);
+      if (eventLogs.length > 150) eventLogs.length = 150;
+      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(eventLogs));
+      renderEventLogs();
+    }
+
+    function renderEventLogs() {
+      const box = document.getElementById("eventsLog");
+      if (!eventLogs.length) {
+        box.innerHTML = "<div style='color:var(--muted)'>Nessun evento registrato. In attesa di telemetria dai dispositivi...</div>";
+        return;
+      }
+      box.innerHTML = eventLogs.map(e =>
+        `<div class="log-entry"><span style="color:var(--muted)">[${e.time}]</span> <strong style="color:var(--cyan)">${e.hwId}</strong> &bull; <span style="color:var(--green)">${e.eventType}</span> — ${e.detail}</div>`
+      ).join("");
+    }
+
+    window.clearEventLog = function() {
+      eventLogs = [];
+      localStorage.removeItem(LOG_STORAGE_KEY);
+      renderEventLogs();
+    };
+
+    function ingestTelemetryPacket(pkt, serverTimestampSec = null) {
+      if (!pkt || !pkt.hw_id) return;
+      const id = pkt.hw_id;
+      const nowMs = Date.now();
+      const seenMs = serverTimestampSec ? (serverTimestampSec * 1000) : nowMs;
+
+      const prev = fleetRegistry[id] || {
+        hw_id: id,
+        alias: `${pkt.product || "Smarty"} (${id})`,
+        first_registered_ms: seenMs,
+        last_seen_ms: 0
+      };
+
+      // Evita di sovrascrivere lo stato attuale con messaggi storici più vecchi
+      if (seenMs < prev.last_seen_ms) {
+        return;
+      }
+
+      const prevPower = prev.power;
+      const updated = {
+        ...prev,
+        ...pkt,
+        last_seen_ms: seenMs
+      };
+
+      // Se il dispositivo si è acceso o spento e non aveva ancora l'epoch salvato, usa il timestamp del server
+      if (pkt.event === "power_on" && (!updated.last_on_ts || updated.last_on_ts < 1700000000)) {
+        updated.last_on_ts = Math.floor(seenMs / 1000);
+      }
+      if (pkt.event === "power_off" && (!updated.last_off_ts || updated.last_off_ts < 1700000000)) {
+        updated.last_off_ts = Math.floor(seenMs / 1000);
+      }
+
+      fleetRegistry[id] = updated;
+      saveRegistry();
+
+      if (pkt.event && (pkt.event !== "heartbeat" || prevPower !== pkt.power)) {
+        pushEventLog(
+          id,
+          pkt.event.toUpperCase(),
+          `Stato: ${pkt.power ? "ACCESO" : "SPENTO"} | Modo: ${pkt.mode} | FW: v${pkt.fw} | IP: ${pkt.wifi_ip}`
+        );
+      }
+
+      renderFleet();
+    }
+
+    async function fetchLatestGitHubVersion() {
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/MAICXEN-STUDIOS/smarty-flasher/main/version.json?cb=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const v = await res.json();
+          if (v.version) {
+            latestGitHubVersion = v.version;
+            document.getElementById("latestFwPill").textContent = `Ultima Release GitHub: v${latestGitHubVersion}`;
+          }
+        }
+      } catch (_) {}
+    }
+
+    window.pollHistoricalTelemetry = async function() {
+      try {
+        const res = await fetch(`${RELAY_HOST}/${FLEET_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.split("\n");
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const env = JSON.parse(line);
+            if (env.event === "message" && env.message) {
+              const pkt = JSON.parse(env.message);
+              ingestTelemetryPacket(pkt, env.time);
+            }
+          } catch (_) {}
+        }
+        renderFleet();
+      } catch (_) {}
+    };
+
+    function connectRealtimeStream() {
+      if (sseSource) sseSource.close();
+      sseSource = new EventSource(`${RELAY_HOST}/${FLEET_TOPIC}/sse`);
+      const pill = document.getElementById("streamStatusPill");
+
+      sseSource.onopen = () => {
+        pill.textContent = "Cloud Stream: LIVE (SSE)";
+        pill.className = "pill green";
+      };
+
+      sseSource.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          const msgStr = data.message || ev.data;
+          const pkt = typeof msgStr === "string" ? JSON.parse(msgStr) : msgStr;
+          ingestTelemetryPacket(pkt, data.time);
+        } catch (_) {}
+      };
+
+      sseSource.onerror = () => {
+        pill.textContent = "Cloud Stream: Riconnessione...";
+        pill.className = "pill amber";
+      };
+    }
+
+    window.probeLocalDevice = async function() {
+      const ip = document.getElementById("lanProbeIp").value.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+      if (!ip) return;
+      try {
+        const res = await fetch(`http://${ip}/api/status`, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const pkt = await res.json();
+        ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000));
+        pushEventLog(pkt.hw_id, "LAN_DISCOVERY", `Rilevato direttamente sulla rete locale (${ip})`);
+      } catch (err) {
+        alert(`Impossibile contattare http://${ip}/api/status: verifica che il dispositivo sia acceso e sulla stessa rete.`);
+      }
+    };
+
+    window.sendDeviceCommand = async function(hwId, cmdObj) {
+      const dev = fleetRegistry[hwId];
+      // Invio tramite canale Cloud Admin verso il dispositivo
+      try {
+        await fetch(`${RELAY_HOST}/${CMD_PREFIX}${hwId}`, {
+          method: "POST",
+          body: JSON.stringify(cmdObj)
+        });
+        pushEventLog(hwId, "ADMIN_CMD", `Inviato comando cloud: ${JSON.stringify(cmdObj)}`);
+      } catch (_) {}
+
+      // Se il dispositivo ha un IP locale raggiungibile, invia anche via HTTP diretto per latenza zero
+      if (dev && dev.wifi_ip && dev.wifi_ip !== "0.0.0.0") {
+        const params = new URLSearchParams();
+        if (cmdObj.power !== undefined) params.set("power", cmdObj.power);
+        if (cmdObj.mode !== undefined) params.set("mode", cmdObj.mode);
+        if (cmdObj.scroll !== undefined) params.set("scroll", cmdObj.scroll);
+        if (cmdObj.brightness !== undefined) params.set("brightness", cmdObj.brightness);
+        if (cmdObj.hex !== undefined) params.set("hex", cmdObj.hex);
+        if ([...params.keys()].length > 0) {
+          fetch(`http://${dev.wifi_ip}/api/set?${params.toString()}`).then(r => r.json()).then(pkt => {
+            ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000));
+          }).catch(() => {});
+        }
+      }
+    };
+
+    window.broadcastCommand = async function(cmdObj) {
+      for (const hwId of Object.keys(fleetRegistry)) {
+        await window.sendDeviceCommand(hwId, cmdObj);
+      }
+    };
+
+    window.broadcastScroll = function() {
+      const txt = document.getElementById("broadcastScrollTxt").value.trim();
+      if (!txt) return;
+      window.broadcastCommand({ scroll: txt });
+    };
+
+    window.renameDevice = function(hwId) {
+      const cur = fleetRegistry[hwId]?.alias || hwId;
+      const next = prompt("Inserisci un nome/etichetta per questo Smarty:", cur);
+      if (next && next.trim()) {
+        fleetRegistry[hwId].alias = next.trim();
+        saveRegistry();
+        renderFleet();
+      }
+    };
+
+    window.removeDevice = function(hwId) {
+      if (!confirm(`Rimuovere ${hwId} dal registro della dashboard?`)) return;
+      delete fleetRegistry[hwId];
+      saveRegistry();
+      renderFleet();
+    };
+
+    window.promptDeviceScroll = function(hwId) {
+      const txt = prompt(`Testo scorrevole da inviare a ${hwId}:`);
+      if (txt && txt.trim()) {
+        window.sendDeviceCommand(hwId, { scroll: txt.trim() });
+      }
+    };
+
+    function fmtTs(epochSec) {
+      epochSec = Number(epochSec) || 0;
+      if (epochSec < 1700000000) return "Mai / N/D";
+      return new Date(epochSec * 1000).toLocaleString("it-IT");
+    }
+
+    function fmtDur(sec) {
+      sec = Number(sec) || 0;
+      const d = Math.floor(sec / 86400);
+      const h = Math.floor((sec % 86400) / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (d > 0) return `${d}g ${h}h ${m}m`;
+      if (h > 0) return `${h}h ${m}m ${s}s`;
+      return `${m}m ${s}s`;
+    }
+
+    function renderFleet() {
+      const q = (document.getElementById("searchFilter").value || "").toLowerCase();
+      const allDevs = Object.values(fleetRegistry).sort((a, b) => (b.last_seen_ms || 0) - (a.last_seen_ms || 0));
+      const nowMs = Date.now();
+
+      let onlineCount = 0;
+      let poweredOnCount = 0;
+      let outdatedCount = 0;
+
+      allDevs.forEach(d => {
+        const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
+        if (isOnline) onlineCount++;
+        if (d.power) poweredOnCount++;
+        if (d.fw && d.fw !== latestGitHubVersion) outdatedCount++;
+      });
+
+      document.getElementById("kpiTotal").textContent = allDevs.length;
+      document.getElementById("kpiOnline").textContent = onlineCount;
+      document.getElementById("kpiPoweredOn").textContent = poweredOnCount;
+      document.getElementById("kpiOutdated").textContent = outdatedCount;
+
+      const filtered = allDevs.filter(d => {
+        if (!q) return true;
+        return (
+          (d.hw_id || "").toLowerCase().includes(q) ||
+          (d.alias || "").toLowerCase().includes(q) ||
+          (d.mac || "").toLowerCase().includes(q) ||
+          (d.wifi_ip || "").toLowerCase().includes(q) ||
+          (d.profile || "").toLowerCase().includes(q)
+        );
+      });
+
+      const grid = document.getElementById("devicesGrid");
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="kpi-card" style="grid-column:1/-1; text-align:center; padding:32px; color:var(--muted);">
+          Nessun dispositivo Smarty ancora associato o trovato con il filtro corrente. Appena un dispositivo con firmware v1.4.0+ si connette al Wi-Fi, comparirà automaticamente qui.
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(d => {
+        const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
+        const isUpToDate = (d.fw === latestGitHubVersion);
+        const lastSeenStr = d.last_seen_ms ? new Date(d.last_seen_ms).toLocaleString("it-IT") : "N/D";
+        const firstRegStr = d.first_registered_ms ? new Date(d.first_registered_ms).toLocaleDateString("it-IT") : "N/D";
+        const hex = d.hex || "#10b981";
+
+        let pxHtml = "";
+        for (let i = 0; i < 23 * 5; i++) {
+          const r = Math.floor(i / 23), c = i % 23;
+          const lit = d.power && (((r + c) % 2 === 0) || d.mode === "Light");
+          const style = lit ? `background:${hex}; box-shadow:0 0 5px ${hex};` : "";
+          pxHtml += `<div class="m-px" style="${style}"></div>`;
+        }
+
+        return `
+          <div class="dev-card ${isOnline ? "online" : "offline"}">
+            <div class="dev-header">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <strong style="font-size:16px;">${d.alias || d.hw_id}</strong>
+                  <button onclick="renameDevice('${d.hw_id}')" style="padding:2px 7px; font-size:11px;">Rinomina</button>
+                </div>
+                <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+                  ID: <strong>${d.hw_id}</strong> &bull; Profilo: ${d.profile || "Smarty_1"} &bull; MAC: ${d.mac || "--"}
+                </div>
+              </div>
+              <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
+                <span class="pill ${isOnline ? "green" : "red"}">${isOnline ? "ONLINE" : "OFFLINE"}</span>
+                <span class="pill ${d.power ? "cyan" : "amber"}">${d.power ? "ACCESO" : "SPENTO"}</span>
+                <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"} (${d.ota_part || "app0"})</span>
+              </div>
+            </div>
+
+            <div class="mini-matrix">${pxHtml}</div>
+
+            <div class="meta-grid">
+              <div class="meta-item"><span>Ultima Volta Connesso</span><strong>${lastSeenStr}</strong></div>
+              <div class="meta-item"><span>Stato Aggiornamento</span><strong>${isUpToDate ? "Aggiornato (v" + d.fw + ")" : "Disponibile v" + latestGitHubVersion}</strong></div>
+              <div class="meta-item"><span>Quando Acceso (Ultimo ON)</span><strong>${fmtTs(d.last_on_ts)}</strong></div>
+              <div class="meta-item"><span>Quando Spento (Ultimo OFF)</span><strong>${fmtTs(d.last_off_ts)}</strong></div>
+              <div class="meta-item"><span>Tempo Totale Acceso</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
+              <div class="meta-item"><span>Uptime Sessione / Boot</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boot)</strong></div>
+              <div class="meta-item"><span>Modalità / Luminosità</span><strong>${d.mode || "--"} (${d.brightness ?? 100}% • Vel ${d.speed ?? 75}%)</strong></div>
+              <div class="meta-item"><span>SoC Temp / Heap Libera</span><strong>${Number(d.temp || 0).toFixed(1)}°C • ${Math.round((d.heap_free || 0)/1024)} KB</strong></div>
+              <div class="meta-item"><span>Rete Wi-Fi &amp; RSSI</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
+              <div class="meta-item"><span>IP Locale &amp; SinricPro</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">${d.wifi_ip || "--"}</a> • ${d.cloud_online ? "Cloud OK" : "Cloud Off"}</strong></div>
+            </div>
+
+            <div class="dev-actions">
+              <button class="btn-primary" onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}})">
+                ${d.power ? "Spegni" : "Accendi"}
+              </button>
+              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Orario'})">Orario</button>
+              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Cuore'})">Cuore</button>
+              <button onclick="sendDeviceCommand('${d.hw_id}', {mode:'Rainbow'})">Rainbow</button>
+              <button class="btn-cyan" onclick="promptDeviceScroll('${d.hw_id}')">Testo...</button>
+              <button onclick="sendDeviceCommand('${d.hw_id}', {action:'fota_update'})">Forza FOTA</button>
+              <button onclick="sendDeviceCommand('${d.hw_id}', {action:'reboot'})">Riavvia</button>
+              <button class="btn-danger" onclick="removeDevice('${d.hw_id}')" style="margin-left:auto;">Rimuovi</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    window.exportRegistry = function() {
+      const blob = new Blob([JSON.stringify({ fleetRegistry, eventLogs }, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `smarty-fleet-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    };
+
+    window.importRegistry = function(ev) {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (data.fleetRegistry) fleetRegistry = { ...fleetRegistry, ...data.fleetRegistry };
+          if (data.eventLogs) eventLogs = data.eventLogs;
+          saveRegistry();
+          renderFleet();
+          renderEventLogs();
+        } catch (err) {
+          alert("File JSON non valido");
+        }
+      };
+      reader.readAsText(f);
+    };
+
+    function initDashboard() {
+      loadSavedData();
+      renderFleet();
+      renderEventLogs();
+      fetchLatestGitHubVersion();
+      window.pollHistoricalTelemetry();
+      connectRealtimeStream();
+      setInterval(() => renderFleet(), 15000);
+    }
+
+    if (sessionStorage.getItem("smarty_admin_auth") === "1") {
+      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("appWrap").style.display = "block";
+      initDashboard();
+    }
+  </script>
+</body>
+</html>
