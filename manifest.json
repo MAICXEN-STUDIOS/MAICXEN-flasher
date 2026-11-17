@@ -1,8 +1,8 @@
 {
   "name": "Smarty LED Matrix (ESP32-S3)",
   "vendor": "MAICXEN STUDIOS",
-  "version": "1.4.0",
-  "release_notes": "Rilascio v1.4.0: Web Server locale integrato (http://smarty.local) stile AledA con controllo completo e WebOTA, sincronizzazione bidirezionale Alexa/SinricPro/Web, telemetria live USB nel Web Flasher e Fleet Dashboard Admin non-bloccante per il monitoraggio remoto di tutti i dispositivi Smarty.",
+  "version": "1.5.0",
+  "release_notes": "Rilascio v1.5.0: Procedura FOTA Nativa via USB Serial ad alta velocita (921600 baud con CRC16, barra di progresso LED 23x5 sul dispositivo e Dual-OTA Rollback Protection) con rilevamento automatico della versione e fallback automatico a esptool-js per i firmware precedenti.",
   "new_install_prompt_erase": false,
   "builds": [
     {
@@ -26,7 +26,7 @@
         {
           "path": "firmware.bin",
           "offset": 131072,
-          "label": "Smarty Firmware v1.4.0 (0x20000)"
+          "label": "Smarty Firmware v1.5.0 (0x20000)"
         }
       ]
     }
