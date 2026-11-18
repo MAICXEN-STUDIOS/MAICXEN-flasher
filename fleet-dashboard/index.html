@@ -1802,43 +1802,43 @@
 
     window.syncWithCloudAndDb = async function() {
       await loadDevicesFromSupabase();
-      await window.pollHistoricalTelemetry();
+      await loadEventsFromSupabase();
     };
 
     window.pollHistoricalTelemetry = async function() {
-      if (!fleetTopic) return;
-      try {
-        const res = await fetch(`${relayHost}/${fleetTopic}/json?poll=1&since=all`, { cache: "no-store" });
-        if (!res.ok) return;
-        const text = await res.text();
-        for (const line of text.split("\n")) {
-          if (!line.trim()) continue;
-          try {
-            const env = JSON.parse(line);
-            if (env.event === "message" && env.message) {
-              ingestTelemetryPacket(JSON.parse(env.message), env.time, true);
-            }
-          } catch (_) {}
-        }
-        renderFleet();
-      } catch (_) {}
+      await loadDevicesFromSupabase();
     };
 
+    let sbRealtimeChannel = null;
     function connectRealtimeStream() {
-      if (!fleetTopic) return;
-      if (sseSource) sseSource.close();
-      sseSource = new EventSource(`${relayHost}/${fleetTopic}/sse`);
       const pill = document.getElementById("streamStatusPill");
-      sseSource.onopen = () => { pill.textContent = "LIVE"; pill.className = "pill green"; };
-      sseSource.onmessage = (ev) => {
-        try {
-          const data = JSON.parse(ev.data);
-          const msgStr = data.message || ev.data;
-          const pkt = typeof msgStr === "string" ? JSON.parse(msgStr) : msgStr;
-          ingestTelemetryPacket(pkt, data.time, true);
-        } catch (_) {}
-      };
-      sseSource.onerror = () => { pill.textContent = "RECONNECTING"; pill.className = "pill amber"; };
+      pill.textContent = "LIVE";
+      pill.className = "pill green";
+
+      if (sbRealtimeChannel) {
+        supabase.removeChannel(sbRealtimeChannel);
+      }
+      sbRealtimeChannel = supabase
+        .channel("maicxen-fleet-live")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "smarty_devices" },
+          (payload) => {
+            if (payload.new && payload.new.hw_id) {
+              fleetRegistry[payload.new.hw_id] = payload.new;
+              renderFleet();
+              if (selectedHwId === payload.new.hw_id) {
+                populateModal(payload.new.hw_id);
+              }
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            pill.textContent = "LIVE";
+            pill.className = "pill green";
+          }
+        });
     }
 
     window.probeLocalDevice = async function() {
@@ -1858,7 +1858,7 @@
     window.sendDeviceCommand = async function(hwId, cmdObj, ev = null) {
       if (ev) ev.stopPropagation();
       const role = currentProfile?.role || "viewer";
-      if (role === "viewer" || !cmdPrefix) {
+      if (role === "viewer") {
         alert("Permission denied: Viewer accounts are read-only.");
         return;
       }
@@ -1868,10 +1868,24 @@
       }
 
       const dev = fleetRegistry[hwId];
+      // Optimistically update local state & Supabase smarty_devices row
+      if (dev) {
+        if (cmdObj.power !== undefined) dev.power = Boolean(cmdObj.power);
+        if (cmdObj.mode !== undefined) dev.mode = cmdObj.mode;
+        if (cmdObj.scroll !== undefined) { dev.power = true; dev.mode = "Scroll:" + cmdObj.scroll; }
+        if (cmdObj.brightness !== undefined) dev.brightness = Number(cmdObj.brightness);
+        if (cmdObj.speed !== undefined) dev.speed = Number(cmdObj.speed);
+        if (cmdObj.hex !== undefined) dev.hex = cmdObj.hex;
+        renderFleet();
+        if (selectedHwId === hwId) populateModal(hwId);
+        upsertDeviceToSupabase(dev);
+      }
+
       try {
-        await fetch(`${relayHost}/${cmdPrefix}${hwId}`, {
-          method: "POST",
-          body: JSON.stringify(cmdObj)
+        await supabase.from("device_commands").insert({
+          hw_id: hwId,
+          cmd: cmdObj,
+          created_by: currentProfile?.email || ""
         });
         pushEventLog(hwId, "REMOTE_CMD", JSON.stringify(cmdObj));
       } catch (_) {}
@@ -2276,7 +2290,9 @@
     };
 
     bootAuthenticatedSession();
-    setInterval(() => renderFleet(), 15000);
+    setInterval(() => {
+      if (currentUser) loadDevicesFromSupabase();
+    }, 10000);
   </script>
 </body>
 </html>
