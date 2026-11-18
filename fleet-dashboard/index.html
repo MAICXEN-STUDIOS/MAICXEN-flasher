@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Fleet Control — MAICXEN STUDIOS</title>
+  <title>MAICXEN EDGE — Enterprise Fleet &amp; Product Console</title>
   <style>
     :root {
       --bg: #070a0f;
@@ -520,11 +520,11 @@
     <div class="auth-card">
       <div class="vendor-tag">
         <svg class="ico" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-        MAICXEN STUDIOS &bull; FLEET ACCESS
+        MAICXEN EDGE &bull; FLEET ACCESS
       </div>
-      <h2 style="font-size:21px; font-weight:800; margin-bottom:4px;">Smarty Control Center</h2>
+      <h2 style="font-size:21px; font-weight:800; margin-bottom:4px;">MAICXEN EDGE Console</h2>
       <p style="font-size:12.5px; color:var(--muted);">
-        Invite-only fleet management with role-based access control (<strong>Admin</strong>, <strong>Editor</strong>, <strong>Viewer</strong>).
+        Unified multi-product IoT fleet management with strict invite-only RBAC (<strong>Admin</strong>, <strong>Editor</strong>, <strong>Viewer</strong>).
       </p>
 
       <div class="auth-mode-tabs" id="authTabs">
@@ -564,10 +564,10 @@
       <div class="brand-left">
         <div>
           <h1 style="font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px;">
-            Smarty Fleet
+            MAICXEN EDGE
             <span class="pill green" id="streamStatusPill">LIVE</span>
           </h1>
-          <span style="font-size:11.5px; color:var(--muted);" id="latestFwPill">Latest Release: v1.5.0</span>
+          <span style="font-size:11.5px; color:var(--muted);" id="latestFwPill">Multi-Product Ecosystem</span>
         </div>
       </div>
 
@@ -575,6 +575,10 @@
         <button class="nav-tab active" onclick="switchSection('devices', this)">
           <svg class="ico" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Devices
+        </button>
+        <button class="nav-tab" onclick="switchSection('catalog', this)">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Products &amp; Catalog
         </button>
         <button class="nav-tab" onclick="switchSection('actions', this)">
           <svg class="ico" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -592,6 +596,10 @@
           <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Profile
         </button>
+        <a href="../" class="nav-tab" style="text-decoration:none; color:var(--cyan);" title="Open Public Universal Web Flasher">
+          <svg class="ico" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Web Flasher &nearr;
+        </a>
       </div>
 
       <div class="user-chip" onclick="switchSection('settings', document.getElementById('navProfileBtn'))" title="Open Profile Settings">
@@ -605,7 +613,7 @@
 
     <!-- COMPACT KPI BAR -->
     <div class="kpi-strip">
-      <div class="kpi-mini"><span class="lbl">Registered</span><span class="num" id="kpiTotal">0</span></div>
+      <div class="kpi-mini"><span class="lbl">Registered Devices</span><span class="num" id="kpiTotal">0</span></div>
       <div class="kpi-mini"><span class="lbl">Online Now</span><span class="num" style="color:var(--green);" id="kpiOnline">0</span></div>
       <div class="kpi-mini"><span class="lbl">Powered ON</span><span class="num" style="color:var(--cyan);" id="kpiPoweredOn">0</span></div>
       <div class="kpi-mini"><span class="lbl">Update Pending</span><span class="num" style="color:var(--amber);" id="kpiOutdated">0</span></div>
@@ -614,13 +622,65 @@
     <!-- SECTION 1: DEVICES (MINIMAL CARDS) -->
     <section class="section-view active" id="sec-devices">
       <div class="filter-bar">
-        <input type="text" id="searchFilter" placeholder="Filter by name, Hardware ID, or IP..." oninput="renderFleet()" style="width:270px;" />
+        <select id="productFilter" onchange="renderFleet()" style="min-width:170px;">
+          <option value="all">All Products (Smarty, AledA...)</option>
+          <option value="smarty">Smarty</option>
+          <option value="aleda">AledA</option>
+        </select>
+        <input type="text" id="searchFilter" placeholder="Filter by name, Hardware ID, model, or IP..." oninput="renderFleet()" style="width:270px;" />
         <button onclick="syncWithCloudAndDb()">
           <svg class="ico" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           Refresh Fleet
         </button>
       </div>
       <div class="fleet-grid" id="devicesGrid"></div>
+    </section>
+
+    <!-- SECTION 1B: PRODUCTS & CATALOG MANAGEMENT -->
+    <section class="section-view" id="sec-catalog">
+      <div class="panel-box role-admin" id="adminCatalogBox">
+        <h3>Register or Update MAICXEN EDGE Product / Model Variant</h3>
+        <p>Add a new product line, hardware revision, or model variant to the global MAICXEN EDGE Catalog. It will immediately synchronize with both the Fleet Console and the public Universal Web Flasher at <code>iot.maicxen.it</code>.</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(175px, 1fr)); gap:8px; margin-bottom:10px;">
+          <input type="text" id="catProdId" placeholder="Product ID (e.g. smarty, aleda)" />
+          <input type="text" id="catProdName" placeholder="Product Name (e.g. Smarty, AledA)" />
+          <input type="text" id="catModelId" placeholder="Model ID (e.g. esp32s3-std)" />
+          <input type="text" id="catModelName" placeholder="Model Title (e.g. AledA Matter S3)" />
+          <input type="text" id="catChip" placeholder="MCU Chip (default: ESP32-S3)" value="ESP32-S3" />
+          <input type="text" id="catHwRev" placeholder="HW Rev (e.g. 1.0)" value="1.0" />
+          <input type="text" id="catVersion" placeholder="Latest Version (e.g. 1.5.0)" value="1.0.0" />
+          <input type="text" id="catCaps" placeholder="Capabilities (comma-separated)" value="power,brightness,rgb,cloud_fota,local_web" />
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="catNotes" placeholder="Release notes / description..." style="flex:1; min-width:240px;" />
+          <button class="btn-primary" onclick="saveCatalogEntry()">Save Product / Variant to Cloud</button>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3>MAICXEN EDGE Product &amp; Firmware Catalog</h3>
+            <p style="margin-bottom:0;">Synchronized across Supabase Cloud and the Universal Web Flasher.</p>
+          </div>
+          <button onclick="loadProductCatalog()">Refresh Catalog</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Product Line</th>
+                <th>Model / Variant</th>
+                <th>MCU &amp; Rev</th>
+                <th>Latest Release</th>
+                <th>Capabilities</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catalogTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <!-- SECTION 2: GLOBAL COMMANDS & LAN DISCOVERY -->
@@ -842,6 +902,7 @@
     let authMode = "login";
 
     let fleetRegistry = {};
+    let productCatalog = [];
     let eventLogs = [];
     let latestGitHubVersion = "1.5.0";
     let sseSource = null;
@@ -863,6 +924,7 @@
       document.getElementById("sec-" + secId).classList.add("active");
       if (btnEl) btnEl.classList.add("active");
       if (secId === "users") window.loadUsersList();
+      if (secId === "catalog") window.loadProductCatalog();
     };
 
     window.switchModalTab = function(paneId, btnEl) {
@@ -1224,6 +1286,7 @@
       document.getElementById("appWrap").style.display = "block";
 
       applyRolePermissionsUI();
+      await window.loadProductCatalog();
       await fetchLatestGitHubVersion();
       await loadDevicesFromSupabase();
       await loadEventsFromSupabase();
@@ -1241,6 +1304,130 @@
       }
     });
 
+    // --- PRODUCT CATALOG SYNC & MANAGEMENT (MULTI-PRODUCT / MULTI-MODEL) ---
+    function getTargetVersionForDevice(dev) {
+      const prodId = (dev.product_id || (String(dev.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toLowerCase();
+      const modId = dev.model_id || "esp32s3-std";
+      const exact = productCatalog.find(c => c.product_id === prodId && c.model_id === modId);
+      if (exact && exact.latest_version) return exact.latest_version;
+      const anyProd = productCatalog.find(c => c.product_id === prodId);
+      if (anyProd && anyProd.latest_version) return anyProd.latest_version;
+      return latestGitHubVersion;
+    }
+
+    window.loadProductCatalog = async function() {
+      const { data } = await supabase
+        .from("product_catalog")
+        .select("*")
+        .order("product_id", { ascending: true });
+      if (data) {
+        productCatalog = data;
+        // Dynamically populate productFilter dropdown
+        const pf = document.getElementById("productFilter");
+        const curVal = pf.value || "all";
+        const uniqueProds = {};
+        data.forEach(r => { uniqueProds[r.product_id] = r.product_name; });
+        pf.innerHTML = `<option value="all">All Products (${Object.values(uniqueProds).join(", ") || "All"})</option>` +
+          Object.entries(uniqueProds).map(([id, name]) => `<option value="${id}">${name}</option>`).join("");
+        pf.value = uniqueProds[curVal] ? curVal : "all";
+
+        // Update topbar pill summary
+        const summary = Object.entries(uniqueProds).map(([id, name]) => {
+          const m = data.find(x => x.product_id === id);
+          return `${name}: v${m ? m.latest_version : "1.0.0"}`;
+        }).join(" · ");
+        if (summary) document.getElementById("latestFwPill").textContent = summary;
+
+        // Render Catalog Table
+        const tbody = document.getElementById("catalogTableBody");
+        if (tbody) {
+          const isAdmin = (currentProfile?.role === "admin");
+          tbody.innerHTML = data.map(row => {
+            const caps = (Array.isArray(row.capabilities) ? row.capabilities : []).map(c =>
+              `<span class="pill" style="background:rgba(255,255,255,0.06);font-size:10px;margin:2px;">${c}</span>`
+            ).join(" ");
+            return `
+              <tr>
+                <td>
+                  <strong>${row.product_name}</strong><br>
+                  <span style="color:var(--muted);font-size:11px;">ID: <code>${row.product_id}</code></span>
+                </td>
+                <td>
+                  <strong>${row.model_name}</strong><br>
+                  <span style="color:var(--muted);font-size:11px;">Variant: <code>${row.model_id}</code></span>
+                </td>
+                <td>
+                  <span class="pill cyan">${row.chip}</span>
+                  <span style="font-size:11px;color:var(--muted);margin-left:4px;">Rev ${row.hw_rev}</span>
+                </td>
+                <td>
+                  <span class="pill green">v${row.latest_version}</span>
+                  <div style="font-size:10.5px;color:var(--muted);margin-top:3px;">${row.release_notes || ""}</div>
+                </td>
+                <td>${caps}</td>
+                <td>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <a href="../?product=${encodeURIComponent(row.product_id)}&model=${encodeURIComponent(row.model_id)}" class="btn-cyan" style="text-decoration:none;padding:5px 9px;border-radius:8px;font-size:11px;">Flash USB &nearr;</a>
+                    ${isAdmin ? `<button class="btn-danger" style="padding:5px 9px;font-size:11px;" onclick="deleteCatalogEntry('${row.id}')">Delete</button>` : ""}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        }
+        renderFleet();
+      }
+    };
+
+    window.saveCatalogEntry = async function() {
+      if (currentProfile?.role !== "admin") return;
+      const product_id = document.getElementById("catProdId").value.trim().toLowerCase();
+      const product_name = document.getElementById("catProdName").value.trim();
+      const model_id = document.getElementById("catModelId").value.trim().toLowerCase();
+      const model_name = document.getElementById("catModelName").value.trim();
+      const chip = document.getElementById("catChip").value.trim() || "ESP32-S3";
+      const hw_rev = document.getElementById("catHwRev").value.trim() || "1.0";
+      const latest_version = document.getElementById("catVersion").value.trim() || "1.0.0";
+      const capabilities = document.getElementById("catCaps").value.split(",").map(s => s.trim()).filter(Boolean);
+      const release_notes = document.getElementById("catNotes").value.trim();
+
+      if (!product_id || !product_name || !model_id || !model_name) {
+        alert("Please fill in Product ID, Product Name, Model ID, and Model Title.");
+        return;
+      }
+
+      const base = `https://iot.maicxen.it/firmware/${product_id}/${model_id}`;
+      const { error } = await supabase.from("product_catalog").upsert({
+        product_id,
+        product_name,
+        model_id,
+        model_name,
+        chip,
+        hw_rev,
+        latest_version,
+        firmware_url: `${base}/firmware.bin`,
+        bootloader_url: `${base}/bootloader.bin`,
+        partitions_url: `${base}/partitions.bin`,
+        boot_app0_url: `${base}/boot_app0.bin`,
+        version_url: `${base}/version.json`,
+        capabilities,
+        description: release_notes,
+        release_notes,
+        is_public: true,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "product_id,model_id" });
+
+      if (error) alert("Catalog error: " + error.message);
+      else await window.loadProductCatalog();
+    };
+
+    window.deleteCatalogEntry = async function(id) {
+      if (currentProfile?.role !== "admin") return;
+      if (!confirm("Delete this product variant from the catalog?")) return;
+      await supabase.from("product_catalog").delete().eq("id", id);
+      await window.loadProductCatalog();
+    };
+
     // --- SUPABASE DATABASE SYNC (DEVICES & EVENTS) ---
     async function loadDevicesFromSupabase() {
       const { data } = await supabase.from("smarty_devices").select("*").order("last_seen_ms", { ascending: false });
@@ -1253,8 +1440,12 @@
     }
 
     async function upsertDeviceToSupabase(dev) {
+      const inferredProd = (dev.product_id || dev.product || (String(dev.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toLowerCase();
       await supabase.from("smarty_devices").upsert({
         hw_id: dev.hw_id,
+        product_id: inferredProd,
+        model_id: dev.model_id || "esp32s3-std",
+        hw_rev: dev.hw_rev || "1.0",
         alias: dev.alias || dev.hw_id,
         mac: dev.mac || "",
         profile: dev.profile || "Smarty_1",
@@ -1656,18 +1847,20 @@
       return new Date(Number(ms)).toLocaleDateString("en-GB");
     }
 
-    // --- MINIMAL CARDS RENDERER ---
+    // --- MINIMAL CARDS RENDERER (MULTI-PRODUCT) ---
     window.renderFleet = function() {
       const q = (document.getElementById("searchFilter").value || "").toLowerCase();
+      const prodFilter = (document.getElementById("productFilter")?.value || "all").toLowerCase();
       const allDevs = Object.values(fleetRegistry).sort((a, b) => (b.last_seen_ms || 0) - (a.last_seen_ms || 0));
       const nowMs = Date.now();
       const canControl = (currentProfile?.role === "editor" || currentProfile?.role === "admin");
 
       let onlineCount = 0, poweredOnCount = 0, outdatedCount = 0;
       allDevs.forEach(d => {
+        const targetVer = getTargetVersionForDevice(d);
         if ((nowMs - (d.last_seen_ms || 0)) < 180000) onlineCount++;
         if (d.power) poweredOnCount++;
-        if (d.fw && d.fw !== latestGitHubVersion) outdatedCount++;
+        if (d.fw && d.fw !== targetVer) outdatedCount++;
       });
 
       document.getElementById("kpiTotal").textContent = allDevs.length;
@@ -1676,26 +1869,33 @@
       document.getElementById("kpiOutdated").textContent = outdatedCount;
 
       const filtered = allDevs.filter(d => {
+        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toLowerCase();
+        if (prodFilter !== "all" && devProd !== prodFilter) return false;
         if (!q) return true;
         return (
           (d.hw_id || "").toLowerCase().includes(q) ||
           (d.alias || "").toLowerCase().includes(q) ||
-          (d.wifi_ip || "").toLowerCase().includes(q)
+          (d.wifi_ip || "").toLowerCase().includes(q) ||
+          devProd.includes(q) ||
+          (d.model_id || "").toLowerCase().includes(q)
         );
       });
 
       const grid = document.getElementById("devicesGrid");
       if (!filtered.length) {
         grid.innerHTML = `<div class="panel-box" style="grid-column:1/-1; text-align:center; color:var(--muted);">
-          No Smarty devices registered yet. Any Smarty running firmware v1.4.0+ will automatically appear here as soon as it connects to Wi-Fi.
+          No MAICXEN EDGE devices match your current filter. Any Smarty or AledA unit will automatically appear here as soon as it connects to Wi-Fi.
         </div>`;
         return;
       }
 
       grid.innerHTML = filtered.map(d => {
         const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
-        const isUpToDate = (d.fw === latestGitHubVersion);
+        const targetVer = getTargetVersionForDevice(d);
+        const isUpToDate = (d.fw === targetVer);
         const hex = d.hex || "#10b981";
+        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toUpperCase();
+        const devModel = d.model_id || "esp32s3-std";
 
         return `
           <div class="mini-card ${isOnline ? "online" : "offline"}" onclick="openDeviceModal('${d.hw_id}')">
@@ -1705,7 +1905,7 @@
                   <span class="dot ${isOnline ? "on" : "off"}"></span>
                   <span>${d.alias || d.hw_id}</span>
                 </div>
-                <div class="mc-sub">${d.hw_id} &bull; Seen ${fmtRelTime(d.last_seen_ms)}</div>
+                <div class="mc-sub">${devProd} (${devModel}) &bull; ${d.hw_id} &bull; ${fmtRelTime(d.last_seen_ms)}</div>
               </div>
               <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"}</span>
             </div>
@@ -1745,11 +1945,13 @@
       if (!d) return;
 
       const isOnline = (Date.now() - (d.last_seen_ms || 0)) < 180000;
-      const isUpToDate = (d.fw === latestGitHubVersion);
+      const targetVer = getTargetVersionForDevice(d);
+      const isUpToDate = (d.fw === targetVer);
       const hex = d.hex || "#10b981";
+      const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toUpperCase();
 
       document.getElementById("mTitle").textContent = d.alias || d.hw_id;
-      document.getElementById("mSubtitle").textContent = `Hardware ID: ${d.hw_id} • Profile: ${d.profile || "Smarty_1"} • MAC: ${d.mac || "--"}`;
+      document.getElementById("mSubtitle").textContent = `Product: ${devProd} (${d.model_id || "esp32s3-std"} · Rev ${d.hw_rev || "1.0"}) • ID: ${d.hw_id} • MAC: ${d.mac || "--"}`;
 
       const pill = document.getElementById("mOnlinePill");
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
