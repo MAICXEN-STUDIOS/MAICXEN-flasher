@@ -639,6 +639,7 @@
         padding: 14px;
       }
 
+      .mc-footer a,
       .mc-footer button {
         flex: 1;
         min-height: 42px;
@@ -769,8 +770,9 @@
     <nav class="navbar">
       <div class="brand-left">
         <div>
-          <h1 style="font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <h1 style="font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             MAICXEN EDGE
+            <span class="pill cyan" style="font-size:10px; padding:2px 8px;">Dashboard v3.1.0</span>
             <span class="pill green" id="streamStatusPill">LIVE</span>
           </h1>
           <span style="font-size:11.5px; color:var(--muted);" id="latestFwPill">Multi-Product Ecosystem</span>
@@ -787,8 +789,8 @@
           Products &amp; Catalog
         </button>
         <button class="nav-tab" onclick="switchSection('actions', this)">
-          <svg class="ico" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          Global &amp; LAN
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          LAN Discovery
         </button>
         <button class="nav-tab" onclick="switchSection('logs', this)">
           <svg class="ico" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -846,7 +848,7 @@
     <section class="section-view" id="sec-catalog">
       <div class="panel-box role-admin" id="adminCatalogBox">
         <h3>Register or Update MAICXEN EDGE Product / Model Variant</h3>
-        <p>Add a new product line, hardware revision, or model variant to the global MAICXEN EDGE Catalog. It will immediately synchronize with both the Fleet Console and the public Universal Web Flasher at <code>iot.maicxen.it</code>.</p>
+        <p>Add or update a product line or hardware model variant. <strong>Versioning Rule:</strong> every product line shares one unified version across all of its models (e.g., all AledA variants share one version while serving distinct firmware binaries).</p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(175px, 1fr)); gap:8px; margin-bottom:10px;">
           <input type="text" id="catProdId" placeholder="Product ID (e.g. smarty, aleda)" />
           <input type="text" id="catProdName" placeholder="Product Name (e.g. Smarty, AledA)" />
@@ -854,7 +856,7 @@
           <input type="text" id="catModelName" placeholder="Model Title (e.g. AledA Matter S3)" />
           <input type="text" id="catChip" placeholder="MCU Chip (default: ESP32-S3)" value="ESP32-S3" />
           <input type="text" id="catHwRev" placeholder="HW Rev (e.g. 1.0)" value="1.0" />
-          <input type="text" id="catVersion" placeholder="Latest Version (e.g. 1.5.0)" value="1.0.0" />
+          <input type="text" id="catVersion" placeholder="Product Version (e.g. 1.6.0)" value="1.0.0" />
           <input type="text" id="catCaps" placeholder="Capabilities (comma-separated)" value="power,brightness,rgb,cloud_fota,local_web" />
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -878,7 +880,7 @@
                 <th>Product Line</th>
                 <th>Model / Variant</th>
                 <th>MCU &amp; Rev</th>
-                <th>Latest Release</th>
+                <th>Product Version</th>
                 <th>Capabilities</th>
                 <th>Actions</th>
               </tr>
@@ -889,22 +891,11 @@
       </div>
     </section>
 
-    <!-- SECTION 2: GLOBAL COMMANDS & LAN DISCOVERY -->
+    <!-- SECTION 2: LAN DISCOVERY -->
     <section class="section-view" id="sec-actions">
       <div class="panel-box">
-        <h3>Fleet-Wide Broadcast Actions</h3>
-        <p>Execute universal power or firmware lifecycle actions across all registered MAICXEN EDGE devices (requires <strong>Editor</strong> or <strong>Admin</strong> role).</p>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn-primary role-editor" onclick="broadcastCommand({power:1})">Power ON All Devices</button>
-          <button class="role-editor" onclick="broadcastCommand({power:0})">Power OFF All Devices</button>
-          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_check'})">Check FOTA on All (Admin)</button>
-          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Force FOTA Update on All (Admin)</button>
-        </div>
-      </div>
-
-      <div class="panel-box">
         <h3>Direct Local Network Discovery (LAN IP Probe)</h3>
-        <p>Query any MAICXEN EDGE device directly on your local Wi-Fi network via its IPv4 address (<code>/api/status</code>).</p>
+        <p>Query any MAICXEN EDGE device directly on your local Wi-Fi network via its IPv4 address (<code>/api/status</code>) to refresh telemetry and open its Local Web UI. Direct hardware control is handled natively with zero latency via the device's Local Web UI, Alexa, or Matter.</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <input type="text" id="lanProbeIp" placeholder="Local IP (e.g. 192.168.1.6 or 192.168.0.111)" style="width:280px;" />
           <button class="btn-cyan" onclick="probeLocalDevice()">Probe Local IP</button>
@@ -918,7 +909,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <div>
             <h3>Chronological Fleet Activity Log</h3>
-            <p style="margin-bottom:0;">Cloud-synchronized audit log of power events, boot cycles, and remote commands.</p>
+            <p style="margin-bottom:0;">Cloud-synchronized audit log of power events, boot cycles, and firmware lifecycle telemetry.</p>
           </div>
           <button class="role-admin" onclick="clearEventLog()">Clear Log (Admin)</button>
         </div>
@@ -1034,24 +1025,22 @@
       <div id="mPcbPreview" style="background:#05080f;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:center;align-items:center;"></div>
 
       <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Overview &amp; Power</button>
+        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Overview &amp; Local UI</button>
         <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetry &amp; History</button>
         <button class="modal-tab" onclick="switchModalTab('sys', this)">3. Firmware &amp; System</button>
       </div>
 
-      <!-- MODAL TAB 1: UNIVERSAL OVERVIEW & POWER -->
+      <!-- MODAL TAB 1: UNIVERSAL OVERVIEW & LOCAL UI -->
       <div class="modal-pane active" id="mpane-ctrl">
-        <div id="viewerNotice" style="display:none; margin-bottom:12px; padding:9px 12px; border-radius:8px; background:rgba(245,158,11,0.12); color:#fcd34d; font-size:12px;">
-          Your account has <strong>Viewer (Read-Only)</strong> permissions. Remote controls are disabled.
-        </div>
-
         <div class="detail-grid" id="mOverviewGrid" style="margin-bottom:14px;"></div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:12px; min-width:200px;" onclick="toggleModalDevicePower()">POWER ON / OFF</button>
-          <a id="mLocalUiBtn" href="#" target="_blank" class="btn-cyan" style="text-decoration:none; padding:12px 16px; border-radius:9px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid rgba(6,182,212,0.32); background:rgba(6,182,212,0.14); color:#38bdf8;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <a id="mLocalUiBtn" href="#" target="_blank" class="btn-primary" style="flex:1; min-width:220px; text-decoration:none; padding:12px 16px; border-radius:9px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--green); color:#03150e;">
             Open Product Local Web UI &nearr;
           </a>
+        </div>
+        <div style="font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.45;">
+          Device controls (power, dimming, channels, effects, and FOTA triggers) operate directly with zero latency on the embedded Local Web UI, Amazon Alexa, or Matter.
         </div>
       </div>
 
@@ -1064,9 +1053,6 @@
       <div class="modal-pane" id="mpane-sys">
         <div class="detail-grid" id="mSysGrid" style="margin-bottom:16px;"></div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--border);">
-          <button class="btn-cyan role-admin" onclick="sendModalCmd({action:'fota_check'})">Check FOTA (Admin)</button>
-          <button class="btn-primary role-admin" onclick="sendModalCmd({action:'fota_update'})">Force FOTA Update (Admin)</button>
-          <button class="role-admin" onclick="sendModalCmd({action:'reboot'})">Reboot (Admin)</button>
           <button class="btn-danger role-admin" style="margin-left:auto;" onclick="removeCurrentDevice()">Remove Device (Admin)</button>
         </div>
       </div>
@@ -1076,14 +1062,11 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/+esm";
 
+    const DASHBOARD_VERSION = "3.1.0";
     const SUPABASE_URL = "https://fuhuykcbapcdwtrwpccy.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1aHV5a2NiYXBjZHd0cndwY2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5NTIyODgsImV4cCI6MjExMDUyODI4OH0.Oj9qHs5l3YSy5NAjwLpzKCQaJNJ75a4dMaJl7RNtbgE";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let relayHost = "https://ntfy.sh";
-    let fleetTopic = null;
-    let cmdPrefix = null;
 
     let currentUser = null;
     let currentProfile = null;
@@ -1092,7 +1075,6 @@
     let fleetRegistry = {};
     let productCatalog = [];
     let eventLogs = [];
-    let latestGitHubVersion = "1.5.0";
     let sseSource = null;
     let selectedHwId = null;
 
@@ -1401,7 +1383,6 @@
       renderAvatarElement(document.getElementById("profileAvatarPreview"), currentProfile);
 
       document.getElementById("navUsersBtn").style.display = isAdmin ? "inline-flex" : "none";
-      document.getElementById("viewerNotice").style.display = isEditorOrAdmin ? "none" : "block";
 
       document.querySelectorAll(".role-editor").forEach(el => {
         el.disabled = !isEditorOrAdmin;
@@ -1451,21 +1432,11 @@
 
       currentProfile = profile;
 
-      const { data: cfgRows } = await supabase.from("fleet_config").select("config_key, config_value");
-      if (cfgRows) {
-        cfgRows.forEach(r => {
-          if (r.config_key === "relay_host") relayHost = r.config_value;
-          if (r.config_key === "fleet_telemetry_topic") fleetTopic = r.config_value;
-          if (r.config_key === "fleet_cmd_prefix") cmdPrefix = r.config_value;
-        });
-      }
-
       document.getElementById("authOverlay").style.display = "none";
       document.getElementById("appWrap").style.display = "block";
 
       applyRolePermissionsUI();
       await window.loadProductCatalog();
-      await fetchLatestGitHubVersion();
       await loadDevicesFromSupabase();
       await loadEventsFromSupabase();
       await window.pollHistoricalTelemetry();
@@ -1482,16 +1453,29 @@
       }
     });
 
-    // --- PRODUCT CATALOG SYNC & MANAGEMENT (MULTI-PRODUCT / MULTI-MODEL) ---
+    // --- PRODUCT CATALOG SYNC & MANAGEMENT (UNIFIED VERSION PER PRODUCT LINE) ---
     function getTargetVersionForDevice(dev) {
-      const prodId = (dev.product_id || (String(dev.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toLowerCase();
-      const modId = dev.model_id || "esp32s3-std";
-      const exact = productCatalog.find(c => c.product_id === prodId && c.model_id === modId);
-      if (exact && exact.latest_version) return exact.latest_version;
+      const hwUpper = String(dev.hw_id || "").toUpperCase();
+      const prodId = (dev.product_id || ((hwUpper.startsWith("ALEDA") || hwUpper.startsWith("AL-")) ? "aleda" : "smarty")).toLowerCase();
       const anyProd = productCatalog.find(c => c.product_id === prodId);
       if (anyProd && anyProd.latest_version) return anyProd.latest_version;
-      return latestGitHubVersion;
+      return dev.fw || "1.0.0";
     }
+
+    window.editCatalogEntry = function(prodId, modId) {
+      const row = productCatalog.find(c => c.product_id === prodId && c.model_id === modId);
+      if (!row) return;
+      document.getElementById("catProdId").value = row.product_id || "";
+      document.getElementById("catProdName").value = row.product_name || "";
+      document.getElementById("catModelId").value = row.model_id || "";
+      document.getElementById("catModelName").value = row.model_name || "";
+      document.getElementById("catChip").value = row.chip || "ESP32-S3";
+      document.getElementById("catHwRev").value = row.hw_rev || "1.0";
+      document.getElementById("catVersion").value = row.latest_version || "1.0.0";
+      document.getElementById("catCaps").value = Array.isArray(row.capabilities) ? row.capabilities.join(",") : "";
+      document.getElementById("catNotes").value = row.release_notes || row.description || "";
+      document.getElementById("adminCatalogBox")?.scrollIntoView({ behavior: "smooth" });
+    };
 
     window.loadProductCatalog = async function() {
       const { data } = await supabase
@@ -1509,7 +1493,7 @@
           Object.entries(uniqueProds).map(([id, name]) => `<option value="${id}">${name}</option>`).join("");
         pf.value = uniqueProds[curVal] ? curVal : "all";
 
-        // Update topbar pill summary
+        // Update topbar pill summary (distinct version per product line)
         const summary = Object.entries(uniqueProds).map(([id, name]) => {
           const m = data.find(x => x.product_id === id);
           return `${name}: v${m ? m.latest_version : "1.0.0"}`;
@@ -1546,6 +1530,7 @@
                 <td>
                   <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <a href="../?product=${encodeURIComponent(row.product_id)}&model=${encodeURIComponent(row.model_id)}" class="btn-cyan" style="text-decoration:none;padding:5px 9px;border-radius:8px;font-size:11px;">Flash USB &nearr;</a>
+                    ${isAdmin ? `<button style="padding:5px 9px;font-size:11px;" onclick="editCatalogEntry('${row.product_id}','${row.model_id}')">Edit</button>` : ""}
                     ${isAdmin ? `<button class="btn-danger" style="padding:5px 9px;font-size:11px;" onclick="deleteCatalogEntry('${row.id}')">Delete</button>` : ""}
                   </div>
                 </td>
@@ -1575,6 +1560,7 @@
       }
 
       const base = `https://iot.maicxen.it/firmware/${product_id}/${model_id}`;
+      const nowIso = new Date().toISOString();
       const { error } = await supabase.from("product_catalog").upsert({
         product_id,
         product_name,
@@ -1592,11 +1578,19 @@
         description: release_notes,
         release_notes,
         is_public: true,
-        updated_at: new Date().toISOString()
+        updated_at: nowIso
       }, { onConflict: "product_id,model_id" });
 
-      if (error) alert("Catalog error: " + error.message);
-      else await window.loadProductCatalog();
+      if (error) {
+        alert("Catalog error: " + error.message);
+      } else {
+        // Keep unified product version synced across all models of this product_id
+        await supabase
+          .from("product_catalog")
+          .update({ latest_version, updated_at: nowIso })
+          .eq("product_id", product_id);
+        await window.loadProductCatalog();
+      }
     };
 
     window.deleteCatalogEntry = async function(id) {
@@ -1759,20 +1753,8 @@
       }
     }
 
-    async function fetchLatestGitHubVersion() {
-      try {
-        const res = await fetch(`https://raw.githubusercontent.com/MAICXEN-STUDIOS/smarty-flasher/main/version.json?cb=${Date.now()}`, { cache: "no-store" });
-        if (res.ok) {
-          const v = await res.json();
-          if (v.version) {
-            latestGitHubVersion = v.version;
-            document.getElementById("latestFwPill").textContent = `Latest Release: v${latestGitHubVersion}`;
-          }
-        }
-      } catch (_) {}
-    }
-
     window.syncWithCloudAndDb = async function() {
+      await window.loadProductCatalog();
       await loadDevicesFromSupabase();
       await loadEventsFromSupabase();
     };
@@ -1825,68 +1807,6 @@
       } catch (err) {
         alert(`Could not reach http://${ip}/api/status`);
       }
-    };
-
-    window.sendDeviceCommand = async function(hwId, cmdObj, ev = null) {
-      if (ev) ev.stopPropagation();
-      const role = currentProfile?.role || "viewer";
-      if (role === "viewer") {
-        alert("Permission denied: Viewer accounts are read-only.");
-        return;
-      }
-      if (cmdObj.action && role !== "admin") {
-        alert("Permission denied: only Admins can trigger system actions (FOTA / Reboot).");
-        return;
-      }
-
-      const dev = fleetRegistry[hwId];
-      // Optimistically update local state & Supabase smarty_devices row
-      if (dev) {
-        if (cmdObj.power !== undefined) dev.power = Boolean(cmdObj.power);
-        if (cmdObj.mode !== undefined) dev.mode = cmdObj.mode;
-        if (cmdObj.scroll !== undefined) { dev.power = true; dev.mode = "Scroll:" + cmdObj.scroll; }
-        if (cmdObj.brightness !== undefined) dev.brightness = Number(cmdObj.brightness);
-        if (cmdObj.speed !== undefined) dev.speed = Number(cmdObj.speed);
-        if (cmdObj.hex !== undefined) dev.hex = cmdObj.hex;
-        renderFleet();
-        if (selectedHwId === hwId) populateModal(hwId);
-        upsertDeviceToSupabase(dev);
-      }
-
-      try {
-        await supabase.from("device_commands").insert({
-          hw_id: hwId,
-          cmd: cmdObj,
-          created_by: currentProfile?.email || ""
-        });
-        pushEventLog(hwId, "REMOTE_CMD", JSON.stringify(cmdObj));
-      } catch (_) {}
-
-      if (dev && dev.wifi_ip && dev.wifi_ip !== "0.0.0.0") {
-        const params = new URLSearchParams();
-        if (cmdObj.power !== undefined) params.set("power", cmdObj.power);
-        if (cmdObj.mode !== undefined) params.set("mode", cmdObj.mode);
-        if (cmdObj.scroll !== undefined) params.set("scroll", cmdObj.scroll);
-        if (cmdObj.brightness !== undefined) params.set("brightness", cmdObj.brightness);
-        if (cmdObj.speed !== undefined) params.set("speed", cmdObj.speed);
-        if (cmdObj.hex !== undefined) params.set("hex", cmdObj.hex);
-        if ([...params.keys()].length > 0) {
-          fetch(`http://${dev.wifi_ip}/api/set?${params.toString()}`).then(r => r.json()).then(pkt => {
-            ingestTelemetryPacket(pkt, Math.floor(Date.now() / 1000), true);
-          }).catch(() => {});
-        }
-      }
-    };
-
-    window.broadcastCommand = async function(cmdObj) {
-      for (const hwId of Object.keys(fleetRegistry)) {
-        await window.sendDeviceCommand(hwId, cmdObj);
-      }
-    };
-
-    window.broadcastScroll = function() {
-      const txt = document.getElementById("broadcastScrollTxt").value.trim();
-      if (txt) window.broadcastCommand({ scroll: txt });
     };
 
     // --- ADMIN USERS, ROLES & BAN MANAGEMENT ---
@@ -2128,7 +2048,6 @@
       const prodFilter = (document.getElementById("productFilter")?.value || "all").toLowerCase();
       const allDevs = Object.values(fleetRegistry).sort((a, b) => (b.last_seen_ms || 0) - (a.last_seen_ms || 0));
       const nowMs = Date.now();
-      const canControl = (currentProfile?.role === "editor" || currentProfile?.role === "admin");
 
       let onlineCount = 0, poweredOnCount = 0, outdatedCount = 0;
       allDevs.forEach(d => {
@@ -2144,7 +2063,8 @@
       document.getElementById("kpiOutdated").textContent = outdatedCount;
 
       const filtered = allDevs.filter(d => {
-        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toLowerCase();
+        const hwUpper = String(d.hw_id || "").toUpperCase();
+        const devProd = (d.product_id || ((hwUpper.startsWith("ALEDA") || hwUpper.startsWith("AL-")) ? "aleda" : "smarty")).toLowerCase();
         if (prodFilter !== "all" && devProd !== prodFilter) return false;
         if (!q) return true;
         return (
@@ -2168,8 +2088,10 @@
         const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
         const targetVer = getTargetVersionForDevice(d);
         const isUpToDate = (d.fw === targetVer);
-        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("AL-") ? "aleda" : "smarty")).toUpperCase();
+        const hwUpper = String(d.hw_id || "").toUpperCase();
+        const devProd = (d.product_id || ((hwUpper.startsWith("ALEDA") || hwUpper.startsWith("AL-")) ? "aleda" : "smarty")).toUpperCase();
         const devModel = d.model_id || "esp32s3-std";
+        const hasValidIp = d.wifi_ip && d.wifi_ip !== "0.0.0.0";
 
         return `
           <div class="mini-card ${isOnline ? "online" : "offline"}" onclick="openDeviceModal('${d.hw_id}')">
@@ -2194,10 +2116,10 @@
             </div>
 
             <div class="mc-footer">
-              <button class="${d.power ? '' : 'btn-primary'}" ${canControl ? "" : "disabled"} onclick="sendDeviceCommand('${d.hw_id}', {power: ${d.power ? 0 : 1}}, event)">
-                ${d.power ? "Turn OFF" : "Turn ON"}
-              </button>
-              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Inspect &rarr;</button>
+              ${hasValidIp
+                ? `<a href="http://${d.wifi_ip}" target="_blank" class="btn-primary" style="text-decoration:none;padding:8px 11px;border-radius:9px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--green);color:#03150e;" onclick="event.stopPropagation()">Open Local UI &nearr;</a>`
+                : `<span style="font-size:11.5px;color:var(--muted);">No Local IP</span>`}
+              <button class="btn-cyan" onclick="openDeviceModal('${d.hw_id}', event)">Inspect Telemetry &rarr;</button>
             </div>
           </div>
         `;
@@ -2235,10 +2157,6 @@
       const pill = document.getElementById("mOnlinePill");
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
       pill.className = "pill " + (isOnline ? "green" : "amber");
-
-      const pwrBtn = document.getElementById("mPwrBtn");
-      pwrBtn.textContent = d.power ? "TURN OFF DEVICE (CURRENTLY ON)" : "TURN ON DEVICE (CURRENTLY OFF)";
-      pwrBtn.className = (d.power ? "btn-danger" : "btn-primary") + " role-editor";
 
       const localBtn = document.getElementById("mLocalUiBtn");
       if (d.wifi_ip && d.wifi_ip !== "0.0.0.0") {
@@ -2280,17 +2198,6 @@
         <div class="detail-cell"><span>Hardware MAC Address</span><strong>${d.mac || "--"}</strong></div>
       `;
     }
-
-    window.sendModalCmd = function(cmdObj) {
-      if (!selectedHwId) return;
-      window.sendDeviceCommand(selectedHwId, cmdObj);
-    };
-
-    window.toggleModalDevicePower = function() {
-      if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
-      const cur = fleetRegistry[selectedHwId].power;
-      window.sendDeviceCommand(selectedHwId, { power: cur ? 0 : 1 });
-    };
 
     window.renameCurrentDevice = async function() {
       if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
