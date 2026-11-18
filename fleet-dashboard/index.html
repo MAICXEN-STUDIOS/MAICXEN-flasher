@@ -892,22 +892,21 @@
     <!-- SECTION 2: GLOBAL COMMANDS & LAN DISCOVERY -->
     <section class="section-view" id="sec-actions">
       <div class="panel-box">
-        <h3>Fleet-Wide Broadcast</h3>
-        <p>Send a simultaneous scrolling marquee message or power state to all registered Smarty units (requires <strong>Editor</strong> or <strong>Admin</strong> role).</p>
+        <h3>Fleet-Wide Broadcast Actions</h3>
+        <p>Execute universal power or firmware lifecycle actions across all registered MAICXEN EDGE devices (requires <strong>Editor</strong> or <strong>Admin</strong> role).</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="text" id="broadcastScrollTxt" placeholder="Scrolling message to broadcast..." style="flex:1; min-width:200px;" />
-          <button class="btn-primary role-editor" onclick="broadcastScroll()">Broadcast Text</button>
-          <button class="role-editor" onclick="broadcastCommand({power:1})">All ON</button>
-          <button class="role-editor" onclick="broadcastCommand({power:0})">All OFF</button>
-          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Update All (FOTA - Admin)</button>
+          <button class="btn-primary role-editor" onclick="broadcastCommand({power:1})">Power ON All Devices</button>
+          <button class="role-editor" onclick="broadcastCommand({power:0})">Power OFF All Devices</button>
+          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_check'})">Check FOTA on All (Admin)</button>
+          <button class="btn-cyan role-admin" onclick="broadcastCommand({action:'fota_update'})">Force FOTA Update on All (Admin)</button>
         </div>
       </div>
 
       <div class="panel-box">
         <h3>Direct Local Network Discovery (LAN IP Probe)</h3>
-        <p>Query a Smarty device directly on your local Wi-Fi network via its IPv4 address.</p>
+        <p>Query any MAICXEN EDGE device directly on your local Wi-Fi network via its IPv4 address (<code>/api/status</code>).</p>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <input type="text" id="lanProbeIp" placeholder="Local IP (e.g. 192.168.1.50)" style="width:260px;" />
+          <input type="text" id="lanProbeIp" placeholder="Local IP (e.g. 192.168.1.6 or 192.168.0.111)" style="width:280px;" />
           <button class="btn-cyan" onclick="probeLocalDevice()">Probe Local IP</button>
         </div>
       </div>
@@ -1015,13 +1014,13 @@
     </section>
   </div>
 
-  <!-- POP-UP MODAL: DEVICE INSPECTOR, TELEMETRY & REMOTE CONTROLLER -->
+  <!-- POP-UP MODAL: UNIVERSAL DEVICE INSPECTOR, TELEMETRY & LIFECYCLE CONTROLLER -->
   <div class="modal-backdrop" id="deviceModal" onclick="if(event.target===this)closeDeviceModal()">
     <div class="modal-window">
       <div class="modal-header">
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <h2 id="mTitle" style="font-size:18px; font-weight:800;">Smarty</h2>
+            <h2 id="mTitle" style="font-size:18px; font-weight:800;">Device</h2>
             <button class="role-editor" onclick="renameCurrentDevice()" style="padding:3px 8px; font-size:11px;">Rename</button>
           </div>
           <div id="mSubtitle" style="font-size:12px; color:var(--muted); margin-top:3px;">ID: --</div>
@@ -1032,44 +1031,25 @@
         </div>
       </div>
 
-      <div class="mini-matrix" id="mMatrix"></div>
-
       <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Controls &amp; Modes</button>
-        <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetry &amp; Timestamps</button>
+        <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Overview &amp; Power</button>
+        <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetry &amp; History</button>
         <button class="modal-tab" onclick="switchModalTab('sys', this)">3. Firmware &amp; System</button>
       </div>
 
-      <!-- MODAL TAB 1: CONTROLS & MODES -->
+      <!-- MODAL TAB 1: UNIVERSAL OVERVIEW & POWER -->
       <div class="modal-pane active" id="mpane-ctrl">
         <div id="viewerNotice" style="display:none; margin-bottom:12px; padding:9px 12px; border-radius:8px; background:rgba(245,158,11,0.12); color:#fcd34d; font-size:12px;">
           Your account has <strong>Viewer (Read-Only)</strong> permissions. Remote controls are disabled.
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
-          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:11px;" onclick="toggleModalDevicePower()">POWER ON / OFF</button>
-          <input type="color" id="mColorPicker" class="role-editor" value="#10b981" onchange="sendModalCmd({hex:this.value})" style="width:48px; height:40px; padding:2px; cursor:pointer;" title="RGB Color" />
-        </div>
+        <div class="detail-grid" id="mOverviewGrid" style="margin-bottom:14px;"></div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
-          <div class="detail-cell">
-            <span>Brightness (<strong id="mBrightLbl">100%</strong>)</span>
-            <input type="range" id="mBrightSlider" class="role-editor" min="0" max="100" value="100" style="width:100%; margin-top:6px;" oninput="document.getElementById('mBrightLbl').textContent=this.value+'%'" onchange="sendModalCmd({brightness:Number(this.value)})" />
-          </div>
-          <div class="detail-cell">
-            <span>Animation Speed (<strong id="mSpeedLbl">75%</strong>)</span>
-            <input type="range" id="mSpeedSlider" class="role-editor" min="1" max="100" value="75" style="width:100%; margin-top:6px;" oninput="document.getElementById('mSpeedLbl').textContent=this.value+'%'" onchange="sendModalCmd({speed:Number(this.value)})" />
-          </div>
-        </div>
-
-        <div style="margin-bottom:14px;">
-          <span style="font-size:11.5px; color:var(--muted);">Display Mode</span>
-          <div class="modes-grid" id="mModesGrid"></div>
-        </div>
-
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="mScrollInput" class="role-editor" placeholder="Send custom scrolling marquee text..." style="flex:1;" />
-          <button class="btn-cyan role-editor" onclick="sendModalScroll()">Send Text</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="mPwrBtn" class="btn-primary role-editor" style="flex:1; padding:12px; min-width:200px;" onclick="toggleModalDevicePower()">POWER ON / OFF</button>
+          <a id="mLocalUiBtn" href="#" target="_blank" class="btn-cyan" style="text-decoration:none; padding:12px 16px; border-radius:9px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid rgba(6,182,212,0.32); background:rgba(6,182,212,0.14); color:#38bdf8;">
+            Open Product Local Web UI &nearr;
+          </a>
         </div>
       </div>
 
@@ -1113,16 +1093,6 @@
     let latestGitHubVersion = "1.5.0";
     let sseSource = null;
     let selectedHwId = null;
-
-    const MODES = ["Start", "Orario", "Light", "Cuore", "Rainbow", "Game", "Ti_amo", "Love_u", "Ema", "Sofi", "Cuori", "WIFI"];
-    const mModesGrid = document.getElementById("mModesGrid");
-    MODES.forEach(m => {
-      const b = document.createElement("button");
-      b.className = "role-editor";
-      b.textContent = m.replace("_", " ");
-      b.onclick = () => sendModalCmd({ mode: m });
-      mModesGrid.appendChild(b);
-    });
 
     window.switchSection = function(secId, btnEl) {
       document.querySelectorAll(".section-view").forEach(s => s.classList.remove("active"));
@@ -2113,8 +2083,7 @@
         const isOnline = (nowMs - (d.last_seen_ms || 0)) < 180000;
         const targetVer = getTargetVersionForDevice(d);
         const isUpToDate = (d.fw === targetVer);
-        const hex = d.hex || "#10b981";
-        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toUpperCase();
+        const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("AL-") ? "aleda" : "smarty")).toUpperCase();
         const devModel = d.model_id || "esp32s3-std";
 
         return `
@@ -2131,8 +2100,8 @@
             </div>
 
             <div class="mc-status-row">
-              <span><span class="color-dot" style="background:${d.power ? hex : '#334155'}"></span>${d.power ? (d.mode || "ON") : "Standby (OFF)"}</span>
-              <span>${d.brightness ?? 100}% &bull; ${Number(d.temp || 0).toFixed(0)}°C</span>
+              <span><span class="color-dot" style="background:${d.power ? '#10b981' : '#475569'}"></span>${d.power ? "Power: ON" : "Power: OFF"}</span>
+              <span>${d.wifi_ip || "--"} &bull; ${Number(d.temp || 0).toFixed(0)}°C</span>
             </div>
 
             <div class="mc-footer">
@@ -2146,7 +2115,7 @@
       }).join("");
     };
 
-    // --- POP-UP MODAL LOGIC ---
+    // --- POP-UP MODAL LOGIC (UNIVERSAL MULTI-PRODUCT) ---
     window.openDeviceModal = function(hwId, ev = null) {
       if (ev) ev.stopPropagation();
       selectedHwId = hwId;
@@ -2167,33 +2136,37 @@
       const isOnline = (Date.now() - (d.last_seen_ms || 0)) < 180000;
       const targetVer = getTargetVersionForDevice(d);
       const isUpToDate = (d.fw === targetVer);
-      const hex = d.hex || "#10b981";
-      const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("ALEDA") ? "aleda" : "smarty")).toUpperCase();
+      const devProd = (d.product_id || (String(d.hw_id || "").toUpperCase().startsWith("AL-") ? "aleda" : "smarty")).toUpperCase();
+      const devModel = d.model_id || "esp32s3-std";
 
       document.getElementById("mTitle").textContent = d.alias || d.hw_id;
-      document.getElementById("mSubtitle").textContent = `Product: ${devProd} (${d.model_id || "esp32s3-std"} · Rev ${d.hw_rev || "1.0"}) • ID: ${d.hw_id} • MAC: ${d.mac || "--"}`;
+      document.getElementById("mSubtitle").textContent = `Product: ${devProd} (${devModel} · Rev ${d.hw_rev || "1.0"}) • ID: ${d.hw_id} • MAC: ${d.mac || "--"}`;
 
       const pill = document.getElementById("mOnlinePill");
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
       pill.className = "pill " + (isOnline ? "green" : "amber");
 
-      let pxHtml = "";
-      for (let i = 0; i < 23 * 5; i++) {
-        const r = Math.floor(i / 23), c = i % 23;
-        const lit = d.power && (((r + c) % 2 === 0) || d.mode === "Light");
-        pxHtml += `<div class="m-px" style="${lit ? `background:${hex};box-shadow:0 0 6px ${hex};` : ''}"></div>`;
-      }
-      document.getElementById("mMatrix").innerHTML = pxHtml;
-
       const pwrBtn = document.getElementById("mPwrBtn");
       pwrBtn.textContent = d.power ? "TURN OFF DEVICE (CURRENTLY ON)" : "TURN ON DEVICE (CURRENTLY OFF)";
       pwrBtn.className = (d.power ? "btn-danger" : "btn-primary") + " role-editor";
 
-      document.getElementById("mColorPicker").value = hex.toLowerCase();
-      document.getElementById("mBrightSlider").value = d.brightness ?? 100;
-      document.getElementById("mBrightLbl").textContent = (d.brightness ?? 100) + "%";
-      document.getElementById("mSpeedSlider").value = d.speed ?? 75;
-      document.getElementById("mSpeedLbl").textContent = (d.speed ?? 75) + "%";
+      const localBtn = document.getElementById("mLocalUiBtn");
+      if (d.wifi_ip && d.wifi_ip !== "0.0.0.0") {
+        localBtn.href = `http://${d.wifi_ip}`;
+        localBtn.style.display = "inline-flex";
+        localBtn.textContent = `Open Local UI (http://${d.wifi_ip}) ↗`;
+      } else {
+        localBtn.style.display = "none";
+      }
+
+      document.getElementById("mOverviewGrid").innerHTML = `
+        <div class="detail-cell"><span>Product Line &amp; Model</span><strong>${devProd} &bull; ${devModel}</strong></div>
+        <div class="detail-cell"><span>Hardware ID &amp; Revision</span><strong>${d.hw_id} (Rev ${d.hw_rev || "1.0"})</strong></div>
+        <div class="detail-cell"><span>Current Power State</span><strong style="color:${d.power ? 'var(--green)' : 'var(--muted)'};">${d.power ? "POWERED ON" : "STANDBY (OFF)"}</strong></div>
+        <div class="detail-cell"><span>Installed Firmware</span><strong>v${d.fw || "--"} (${isUpToDate ? "Up to date" : "v" + targetVer + " available"})</strong></div>
+        <div class="detail-cell"><span>Wi-Fi SSID &amp; Signal</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
+        <div class="detail-cell"><span>MCU SoC Temp &amp; Free RAM</span><strong>${Number(d.temp || 0).toFixed(1)} °C &bull; ${Math.round((d.heap_free || 0)/1024)} KB</strong></div>
+      `;
 
       document.getElementById("mTelemGrid").innerHTML = `
         <div class="detail-cell"><span>Last Connected</span><strong>${d.last_seen_ms ? new Date(Number(d.last_seen_ms)).toLocaleString("en-GB") : "N/A"}</strong></div>
@@ -2203,18 +2176,18 @@
         <div class="detail-cell"><span>Cumulative On-Time</span><strong>${fmtDur(d.total_on_sec)}</strong></div>
         <div class="detail-cell"><span>Session Uptime / Boots</span><strong>${fmtDur(d.uptime)} (${d.boot_count || 1} boots)</strong></div>
         <div class="detail-cell"><span>Wi-Fi Network &amp; RSSI</span><strong>${d.wifi_ssid || "--"} (${d.rssi || 0} dBm)</strong></div>
-        <div class="detail-cell"><span>Local Web Hub</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">http://${d.wifi_ip || "--"} &nearr;</a></strong></div>
+        <div class="detail-cell"><span>Local IPv4 Address</span><strong><a href="http://${d.wifi_ip}" target="_blank" style="color:var(--cyan);">http://${d.wifi_ip || "--"} &nearr;</a></strong></div>
         <div class="detail-cell"><span>ESP32-S3 SoC Temp</span><strong>${Number(d.temp || 0).toFixed(1)} °C</strong></div>
         <div class="detail-cell"><span>RAM Heap (Free / Min)</span><strong>${Math.round((d.heap_free || 0)/1024)} KB / ${Math.round((d.heap_min || 0)/1024)} KB</strong></div>
       `;
 
       document.getElementById("mSysGrid").innerHTML = `
-        <div class="detail-cell"><span>Installed Firmware</span><strong>v${d.fw || "--"} (${isUpToDate ? "Up to date" : "Update v" + latestGitHubVersion + " available"})</strong></div>
+        <div class="detail-cell"><span>Installed Firmware</span><strong>v${d.fw || "--"} (${isUpToDate ? "Up to date" : "Update v" + targetVer + " available"})</strong></div>
         <div class="detail-cell"><span>Active OTA Partition</span><strong>${d.ota_part || "app0"} (Dual-OTA Rollback)</strong></div>
         <div class="detail-cell"><span>FOTA Engine Status</span><strong>${d.fota_status || "Ready"}</strong></div>
-        <div class="detail-cell"><span>Native USB FOTA</span><strong>${d.serial_ota ? "Supported (921600 baud CRC16)" : "Legacy (< v1.5.0)"}</strong></div>
-        <div class="detail-cell"><span>SinricPro / Alexa Cloud</span><strong>${d.cloud_online ? "Connected (ONLINE)" : "Disconnected"}</strong></div>
-        <div class="detail-cell"><span>SinricPro Device ID</span><strong>${d.sinric_id || "--"}</strong></div>
+        <div class="detail-cell"><span>Native USB FOTA</span><strong>${d.serial_ota ? "Supported (921600 baud CRC16)" : "Bootloader Mode"}</strong></div>
+        <div class="detail-cell"><span>Cloud / Ecosystem Sync</span><strong>${d.cloud_online ? "Connected (ONLINE)" : "Disconnected"}</strong></div>
+        <div class="detail-cell"><span>Hardware MAC Address</span><strong>${d.mac || "--"}</strong></div>
       `;
     }
 
@@ -2229,19 +2202,11 @@
       window.sendDeviceCommand(selectedHwId, { power: cur ? 0 : 1 });
     };
 
-    window.sendModalScroll = function() {
-      const txt = document.getElementById("mScrollInput").value.trim();
-      if (txt && selectedHwId) {
-        window.sendDeviceCommand(selectedHwId, { scroll: txt });
-        document.getElementById("mScrollInput").value = "";
-      }
-    };
-
     window.renameCurrentDevice = async function() {
       if (!selectedHwId || !fleetRegistry[selectedHwId]) return;
       if (currentProfile?.role === "viewer") return;
       const cur = fleetRegistry[selectedHwId].alias || selectedHwId;
-      const next = prompt("Enter a custom label for this Smarty unit:", cur);
+      const next = prompt("Enter a custom label for this MAICXEN EDGE device:", cur);
       if (next && next.trim()) {
         fleetRegistry[selectedHwId].alias = next.trim();
         await upsertDeviceToSupabase(fleetRegistry[selectedHwId]);
