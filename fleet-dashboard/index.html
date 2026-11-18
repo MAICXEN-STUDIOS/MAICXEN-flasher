@@ -1031,6 +1031,8 @@
         </div>
       </div>
 
+      <div id="mPcbPreview" style="background:#05080f;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;justify-content:center;align-items:center;"></div>
+
       <div class="modal-tabs">
         <button class="modal-tab active" onclick="switchModalTab('ctrl', this)">1. Overview &amp; Power</button>
         <button class="modal-tab" onclick="switchModalTab('telem', this)">2. Telemetry &amp; History</button>
@@ -2037,6 +2039,89 @@
       return new Date(Number(ms)).toLocaleDateString("en-GB");
     }
 
+    // --- DYNAMIC STYLIZED PCB RENDERER (SMARTY 23x5, ALEDA V4 & GENERIC MAICXEN EDGE) ---
+    function buildStylizedPcbSvg(prodId, isPoweredOn = false, compact = false) {
+      const p = String(prodId || "smarty").toLowerCase();
+      if (p === "aleda") {
+        const relayColor = isPoweredOn ? "#1da1f2" : "#1e3a5f";
+        let topTerms = "";
+        for (let i = 0; i < 16; i++) {
+          const cx = 62 + i * 24;
+          topTerms += `<rect x="${cx - 8}" y="10" width="17" height="20" rx="1.5" fill="#3a9d4e" stroke="#1e562b" stroke-width="0.8"/>`;
+          topTerms += `<circle cx="${cx + 0.5}" cy="20" r="4.5" fill="#94a3b8"/>`;
+          topTerms += `<rect x="${cx - 3.5}" y="38" width="7" height="4.5" fill="#0f172a" stroke="#cbd5e1" stroke-width="0.5"/>`;
+        }
+        let relays = "";
+        for (let r = 0; r < 4; r++) {
+          const rx = 86 + r * 92;
+          relays += `<rect x="${rx + 26}" y="148" width="24" height="7" rx="1" fill="#0f172a" stroke="#94a3b8" stroke-width="0.8"/>`;
+          relays += `<rect x="${rx}" y="164" width="76" height="76" rx="4" fill="${relayColor}" stroke="#bae6fd" stroke-width="1.2"/>`;
+          relays += `<text x="${rx + 38}" y="182" fill="#082f49" font-size="8" font-weight="800" text-anchor="middle" font-family="sans-serif">RLY${r + 1}</text>`;
+          relays += `<rect x="${rx + 6}" y="240" width="64" height="22" rx="2" fill="#10b981" stroke="#047857" stroke-width="1"/>`;
+          for (let k = 0; k < 3; k++) {
+            relays += `<circle cx="${rx + 17 + k * 21}" cy="251" r="5.5" fill="#cbd5e1"/>`;
+          }
+        }
+        return `
+          <svg viewBox="0 0 500 272" style="width:100%;max-width:${compact ? '210px' : '380px'};height:auto;display:block;">
+            <rect x="24" y="14" width="452" height="242" rx="10" fill="#122b54" stroke="#284e8a" stroke-width="2"/>
+            <circle cx="38" cy="28" r="5.5" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+            <circle cx="460" cy="28" r="5.5" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+            <circle cx="38" cy="242" r="5.5" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+            <circle cx="460" cy="242" r="5.5" fill="#090d16" stroke="#64748b" stroke-width="2"/>
+            ${topTerms}
+            <rect x="434" y="34" width="40" height="42" rx="3" fill="#3a9d4e" stroke="#1e562b" stroke-width="1"/>
+            <circle cx="454" cy="45" r="7" fill="#cbd5e1"/><circle cx="454" cy="64" r="7" fill="#cbd5e1"/>
+            <rect x="24" y="74" width="22" height="44" rx="2" fill="#1e293b" stroke="#d4a64a" stroke-width="1"/>
+            <path d="M28 80 h12 v6 h-10 v6 h10 v6 h-10 v6 h10 v6 h-12" fill="none" stroke="#eab308" stroke-width="1.4"/>
+            <rect x="46" y="74" width="54" height="44" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+            <text x="73" y="99" fill="#334155" font-size="7" font-weight="700" text-anchor="middle" font-family="monospace">ESP32-S3</text>
+            <rect x="18" y="138" width="28" height="24" rx="3" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+            <circle cx="234" cy="80" r="11" fill="none" stroke="#d4a64a" stroke-width="1.4"/>
+            <text x="215" y="112" fill="#f8fafc" font-size="14" font-weight="800" text-anchor="middle" font-family="sans-serif">MAICXEN EDGE</text>
+            <text x="200" y="130" fill="#e2e8f0" font-size="13.5" font-weight="800" text-anchor="middle" font-family="sans-serif">ALedaV4</text>
+            ${relays}
+          </svg>
+        `;
+      } else if (p === "smarty") {
+        let capsAndLeds = "";
+        for (let r = 0; r < 5; r++) {
+          const ry = 44 + r * 20;
+          capsAndLeds += `<line x1="42" y1="${ry}" x2="478" y2="${ry}" stroke="#1c3d72" stroke-width="3"/>`;
+        }
+        for (let c = 0; c < 23; c++) {
+          const cx = 48 + c * 19;
+          capsAndLeds += `<rect x="${cx - 4.5}" y="22" width="9" height="4.5" rx="0.8" fill="#d4a64a"/>`;
+          for (let r = 0; r < 5; r++) {
+            const cy = 44 + r * 20;
+            const isBorder = (r === 0 || r === 4 || c === 0 || c === 22);
+            const ledFill = isPoweredOn ? (isBorder ? "#10b981" : "#f8fafc") : "#e2e8f0";
+            capsAndLeds += `<rect x="${cx - 5}" y="${cy - 5}" width="10" height="10" rx="1.5" fill="${ledFill}" stroke="#94a3b8" stroke-width="0.5"/>`;
+          }
+        }
+        return `
+          <svg viewBox="0 0 520 156" style="width:100%;max-width:${compact ? '230px' : '460px'};height:auto;display:block;">
+            <rect x="8" y="8" width="504" height="140" rx="22" fill="#132a4f" stroke="#284e8a" stroke-width="2"/>
+            <circle cx="28" cy="26" r="7.5" fill="#090d16" stroke="#d4a64a" stroke-width="3.5"/>
+            <circle cx="492" cy="26" r="7.5" fill="#090d16" stroke="#d4a64a" stroke-width="3.5"/>
+            <circle cx="28" cy="130" r="7.5" fill="#090d16" stroke="#d4a64a" stroke-width="3.5"/>
+            <circle cx="492" cy="130" r="7.5" fill="#090d16" stroke="#d4a64a" stroke-width="3.5"/>
+            ${capsAndLeds}
+          </svg>
+        `;
+      } else {
+        return `
+          <svg viewBox="0 0 480 160" style="width:100%;max-width:${compact ? '210px' : '400px'};height:auto;display:block;">
+            <rect x="20" y="14" width="440" height="132" rx="14" fill="#122b54" stroke="#284e8a" stroke-width="2"/>
+            <rect x="56" y="44" width="70" height="70" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+            <text x="91" y="83" fill="#1e293b" font-size="9" font-weight="800" text-anchor="middle" font-family="monospace">ESP32-S3</text>
+            <text x="275" y="76" fill="#f8fafc" font-size="15" font-weight="800" text-anchor="middle" font-family="sans-serif">MAICXEN EDGE</text>
+            <text x="275" y="96" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle" font-family="monospace">${p.toUpperCase()} PCB</text>
+          </svg>
+        `;
+      }
+    }
+
     // --- MINIMAL CARDS RENDERER (MULTI-PRODUCT) ---
     window.renderFleet = function() {
       const q = (document.getElementById("searchFilter").value || "").toLowerCase();
@@ -2099,6 +2184,10 @@
               <span class="pill ${isUpToDate ? "green" : "amber"}">v${d.fw || "--"}</span>
             </div>
 
+            <div style="background:#05080f;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px;display:flex;justify-content:center;align-items:center;min-height:84px;">
+              ${buildStylizedPcbSvg(devProd.toLowerCase(), Boolean(d.power), true)}
+            </div>
+
             <div class="mc-status-row">
               <span><span class="color-dot" style="background:${d.power ? '#10b981' : '#475569'}"></span>${d.power ? "Power: ON" : "Power: OFF"}</span>
               <span>${d.wifi_ip || "--"} &bull; ${Number(d.temp || 0).toFixed(0)}°C</span>
@@ -2141,6 +2230,7 @@
 
       document.getElementById("mTitle").textContent = d.alias || d.hw_id;
       document.getElementById("mSubtitle").textContent = `Product: ${devProd} (${devModel} · Rev ${d.hw_rev || "1.0"}) • ID: ${d.hw_id} • MAC: ${d.mac || "--"}`;
+      document.getElementById("mPcbPreview").innerHTML = buildStylizedPcbSvg(devProd.toLowerCase(), Boolean(d.power), false);
 
       const pill = document.getElementById("mOnlinePill");
       pill.textContent = isOnline ? "ONLINE" : "OFFLINE";
