@@ -2,7 +2,7 @@
   "product_id": "aleda",
   "product_name": "AledA",
   "model_id": "esp32s3-matter",
-  "model_name": "AledA Matter over Wi-Fi Controller (ESP32-S3)",
+  "model_name": "AledA V1 Matter over Wi-Fi Controller (ESP32-S3 · 100×100 mm PCB V1)",
   "chip": "ESP32-S3",
   "hw_rev": "1.0",
   "offsets": [
