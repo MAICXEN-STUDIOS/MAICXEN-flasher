@@ -1,1022 +1,357 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smarty Studio: Hybrid USB FOTA &amp; Web Flasher — MAICXEN STUDIOS</title>
-  <style>
-    :root {
-      --bg-dark: #090d16;
-      --card-bg: rgba(17, 24, 39, 0.88);
-      --border: rgba(56, 189, 248, 0.22);
-      --accent: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.35);
-      --cyan: #06b6d4;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #112233 0%, var(--bg-dark) 72%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 28px 16px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 820px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 30px 26px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(6, 182, 212, 0.08);
-      backdrop-filter: blur(14px);
-    }
-
-    .header { text-align: center; margin-bottom: 18px; }
-
-    .vendor-badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--cyan);
-      background: rgba(6, 182, 212, 0.12);
-      border: 1px solid rgba(6, 182, 212, 0.3);
-      padding: 4px 12px;
-      border-radius: 999px;
-      margin-bottom: 8px;
-    }
-
-    h1 { font-size: 27px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
-    .subtitle { font-size: 13.5px; color: var(--text-muted); }
-
-    /* Virtual 23x5 LED Matrix Preview */
-    .matrix-wrapper {
-      background: #05070c;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 16px;
-      margin: 18px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.9);
-    }
-
-    .led-matrix {
-      display: grid;
-      grid-template-columns: repeat(23, 1fr);
-      gap: 4px;
-      width: 100%;
-      max-width: 620px;
-    }
-
-    .led-pixel {
-      aspect-ratio: 1;
-      border-radius: 50%;
-      background: #141a26;
-      transition: background 0.12s ease, box-shadow 0.12s ease;
-    }
-
-    .led-pixel.on-green { background: #10b981; box-shadow: 0 0 8px #10b981; }
-    .led-pixel.on-blue { background: #06b6d4; box-shadow: 0 0 8px #06b6d4; }
-    .led-pixel.on-err { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
-
-    /* Tabs */
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 6px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .tab-btn {
-      background: transparent;
-      color: var(--text-muted);
-      border: none;
-      padding: 10px 12px;
-      border-radius: 9px;
-      font-size: 13.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.15s;
-    }
-
-    .tab-btn.active {
-      background: rgba(6, 182, 212, 0.18);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.35);
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* Cards & Info */
-    .info-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .version-pill {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      font-weight: 700;
-      font-size: 13px;
-      padding: 3px 10px;
-      border-radius: 6px;
-    }
-
-    .safe-pill {
-      background: rgba(6, 182, 212, 0.14);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 6px;
-    }
-
-    .release-notes { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-top: 6px; }
-
-    /* Buttons */
-    .btn-flash {
-      width: 100%;
-      padding: 15px 22px;
-      font-size: 15.5px;
-      font-weight: 700;
-      color: #04130d;
-      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      box-shadow: 0 8px 25px var(--accent-glow);
-      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-    }
-
-    .btn-flash:hover:not(:disabled) { transform: translateY(-1px); }
-    .btn-flash:disabled { opacity: 0.55; cursor: not-allowed; }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      color: var(--text-main);
-      border: 1px solid rgba(255,255,255,0.14);
-      padding: 8px 14px;
-      border-radius: 9px;
-      font-size: 12.5px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
-
-    /* Progress Bar */
-    .progress-section { display: none; margin-top: 18px; }
-    .progress-section.active { display: block; }
-    .progress-header { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
-    .progress-track { width: 100%; height: 12px; background: rgba(255, 255, 255, 0.07); border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--accent)); border-radius: 999px; transition: width 0.15s ease; }
-
-    .status-banner { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; line-height: 1.4; }
-    .status-banner.success { display: block; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; }
-    .status-banner.error { display: block; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; }
-    .status-banner.warning { display: block; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fcd34d; }
-
-    /* Telemetry Grid */
-    .telem-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .kpi-box {
-      background: rgba(0, 0, 0, 0.28);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 11px;
-      padding: 12px 14px;
-    }
-
-    .kpi-label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 4px; }
-    .kpi-val { font-size: 15px; font-weight: 700; color: var(--text-main); }
-
-    .console-box {
-      margin-top: 10px;
-      background: #05070c;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 11.5px;
-      color: #a7f3d0;
-      height: 165px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .part-bar {
-      display: flex;
-      width: 100%;
-      height: 26px;
-      border-radius: 8px;
-      overflow: hidden;
-      margin: 10px 0;
-      font-size: 10.5px;
-      font-weight: 700;
-    }
-    .part-seg { display: flex; align-items: center; justify-content: center; color: #051016; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" type="image/png" href="./shared/assets/logo-maicxen-edge-color.png" />
+  <title>MAICXEN EDGE — Web Flasher</title>
+  <link rel="stylesheet" href="./shared/css/tokens.css" />
+  <link rel="stylesheet" href="./flasher/css/flasher.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <span class="vendor-badge">MAICXEN STUDIOS</span>
-      <h1>Smarty ESP32-S3 Web Studio</h1>
-      <p class="subtitle">Aggiornamento Ibrido Intelligente: <strong>FOTA Nativo via USB</strong> (con barra LED sul dispositivo) o Fallback Bootloader esptool-js</p>
-    </div>
+  <!-- Sticky Apple-style Translucent Navigation -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="./" class="brand" aria-label="MAICXEN EDGE Home">
+        <img
+          src="./shared/assets/logo-maicxen-edge-color.png"
+          alt="MAICXEN EDGE"
+          class="brand-logo"
+        />
+        <div class="brand-meta">
+          <span class="brand-product">Web Flasher</span>
+          <span class="brand-ver">v2.4.0</span>
+        </div>
+      </a>
 
-    <div class="matrix-wrapper">
-      <div class="led-matrix" id="ledMatrix"></div>
-      <div style="display:flex; justify-content:space-between; width:100%; max-width:620px; font-size:12px; color:var(--text-muted);">
-        <span id="matrixStatusLeft">Matrice LED 23x5 (115 Pixel WS2812B)</span>
-        <span id="matrixStatusRight">Pronto</span>
+      <!-- Segmented View Navigation -->
+      <nav class="view-segmented" role="tablist" aria-label="Flasher sections">
+        <button type="button" class="view-tab active" data-view="flash" role="tab" aria-selected="true">Flash</button>
+        <button type="button" class="view-tab" data-view="diagnostics" role="tab" aria-selected="false">Diagnostics</button>
+        <button type="button" class="view-tab" data-view="tools" role="tab" aria-selected="false">Tools</button>
+      </nav>
+
+      <div class="topbar-actions">
+        <a href="https://iot.maicxen.it/dashboard/" class="nav-link" title="Open Enterprise Fleet Console">
+          <span>Fleet Console</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7"/><path d="M7 7h10v10"/>
+          </svg>
+        </a>
       </div>
     </div>
+  </header>
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('flash', this)">1. Aggiorna / Flash Firmware</button>
-      <button class="tab-btn" onclick="switchTab('telemetry', this)">2. Telemetria &amp; Controllo USB</button>
-      <button class="tab-btn" onclick="switchTab('specs', this)">3. Dati Prodotto &amp; Memoria</button>
-    </div>
+  <main class="shell">
+    <!-- ================================================================== -->
+    <!-- VIEW 1: FLASH (PRIMARY WORKSPACE)                                  -->
+    <!-- ================================================================== -->
+    <section class="view-panel active" id="view-flash" role="tabpanel">
+      <div class="hero-head">
+        <div class="hero-kicker" id="autoDetectBadge">USB Auto-Discovery Ready</div>
+        <h1 class="hero-title" id="heroProductTitle">MAICXEN EDGE</h1>
+        <p class="hero-sub" id="heroProductTagline">Select a product line and connect via USB to update firmware seamlessly.</p>
 
-    <!-- TAB 1: HYBRID USB FOTA + ESPTOOL WEB FLASHER -->
-    <div class="tab-panel active" id="tab-flash">
-      <div class="info-card">
-        <div class="info-row">
-          <div>
-            <strong>Ultimo Firmware Ufficiale:</strong>
-            <span class="version-pill" id="fwVersion">Caricamento...</span>
+        <!-- Segmented Product Switcher -->
+        <div class="product-segmented" id="productTabs" role="tablist" aria-label="Product Line"></div>
+      </div>
+
+      <!-- Airy Hardware Stage -->
+      <div class="hardware-stage">
+        <div id="pcbVisualizer" class="pcb-canvas"></div>
+        <div class="stage-caption">
+          <span id="matrixLeftLabel">MAICXEN EDGE Hardware</span>
+          <span id="matrixStatusRight" class="stage-status">Idle · Waiting for USB</span>
+        </div>
+      </div>
+
+      <!-- macOS-style Grouped Settings List -->
+      <div class="list-group">
+        <!-- Row 1: Model Dropdown -->
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title">Hardware Model</span>
+            <span class="row-sub">Board architecture &amp; firmware variant</span>
           </div>
-          <span class="safe-pill" id="modeBadge">Auto-Detect: USB FOTA / esptool-js</span>
+          <div class="list-row-control select-wrap">
+            <select id="modelSelect" class="apple-select" aria-label="Hardware Model"></select>
+            <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
         </div>
-        <div class="release-notes" id="fwNotes">Connessione ai metadati del firmware in corso...</div>
-        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px; color:var(--text-muted);">
-          <strong>Logica Intelligente Dual-Mode:</strong> Alla selezione della porta, il Web Flasher interroga la versione installata su Smarty:
-          <ul style="padding-left:18px; margin-top:4px;">
-            <li>Se rileva firmware <strong>&ge; v1.5.0</strong>: attiva la <strong>procedura nativa FOTA del dispositivo via USB</strong> (con barra di avanzamento reale sulla matrice LED 23x5 e scrittura sulla partizione OTA gemella con Rollback Protection).</li>
-            <li>Se rileva firmware <strong>&lt; v1.5.0</strong> o chip vergine: esegue automaticamente il <strong>Flashing Classico esptool-js</strong> (senza cancellare la partizione NVS).</li>
-          </ul>
+
+        <!-- Row 2: Target Firmware with Hover/Click Popover for Release Notes -->
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title">Target Firmware</span>
+            <span class="row-sub" id="selectedModelTitle">Synchronizing catalog…</span>
+          </div>
+          <div class="list-row-control">
+            <div class="popover-anchor" id="versionPopoverAnchor">
+              <button type="button" class="version-trigger" id="fwVersionBtn" aria-expanded="false" aria-controls="releasePopover">
+                <span class="version-dot"></span>
+                <span id="fwVersion">v…</span>
+                <svg class="info-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </button>
+
+              <!-- Release Notes & Capabilities Popover (Hidden by default) -->
+              <div class="release-popover" id="releasePopover" role="tooltip">
+                <div class="popover-head">
+                  <span class="popover-title" id="popoverModelName">Release Notes</span>
+                  <span class="popover-chip" id="popoverChip">ESP32</span>
+                </div>
+                <p class="popover-notes" id="fwNotes">Synchronizing product catalog from MAICXEN EDGE Cloud…</p>
+                <div class="cap-tags" id="capTags"></div>
+                <div class="popover-foot">
+                  <a href="#" id="popoverDownloadBin" class="popover-link" download>Download firmware.bin ↓</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Update Mode -->
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title">Transfer Protocol</span>
+            <span class="row-sub">Preserves Wi-Fi &amp; Matter NVS credentials</span>
+          </div>
+          <div class="list-row-control">
+            <span class="mode-text" id="modeBadge">Hybrid · Auto USB-FOTA / Bootloader</span>
+          </div>
+        </div>
+
+        <!-- Row 4: Force Upload Toggle -->
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title">Force Re-flash</span>
+            <span class="row-sub">Upload even if device is already on latest release</span>
+          </div>
+          <div class="list-row-control">
+            <label class="ios-switch" aria-label="Force upload even if already up to date">
+              <input type="checkbox" id="forceFlashChk" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
 
-      <button class="btn-flash" id="flashBtn">
-        Scegli Porta USB e Avvia Aggiornamento Intelligente
-      </button>
+      <!-- Primary Action -->
+      <div class="action-block">
+        <button type="button" class="primary-btn" id="flashBtn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          <span>Connect USB &amp; Flash Firmware</span>
+        </button>
 
-      <div class="progress-section" id="progressSection">
-        <div class="progress-header">
-          <span id="progressStep">Preparazione...</span>
-          <span id="progressPct">0%</span>
+        <div class="progress-section" id="progressSection">
+          <div class="progress-header">
+            <span id="progressStep">Initializing…</span>
+            <span id="progressPct" class="mono">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
+
+        <div class="status-banner" id="statusBanner" role="status"></div>
       </div>
 
-      <div class="status-banner" id="statusBanner"></div>
-
-      <details style="margin-top:16px;" id="consoleDetails">
-        <summary style="font-size:12px; color:var(--text-muted); cursor:pointer;">Mostra log di aggiornamento (USB FOTA / esptool-js)</summary>
-        <div class="console-box" id="consoleLog"></div>
+      <!-- Collapsible Technical Log -->
+      <details class="disclosure-row" id="consoleDetails">
+        <summary>
+          <span>Serial &amp; Bootloader Log</span>
+          <span class="disclosure-hint">Expand</span>
+        </summary>
+        <div class="console-wrap">
+          <div class="console-toolbar">
+            <span class="console-meta">WebSerial Output</span>
+            <div class="console-btns">
+              <button type="button" class="text-btn" id="copyLogBtn">Copy</button>
+              <button type="button" class="text-btn" id="clearLogBtn">Clear</button>
+            </div>
+          </div>
+          <div class="console" id="consoleLog"></div>
+        </div>
       </details>
-    </div>
+    </section>
 
-    <!-- TAB 2: LIVE USB TELEMETRY & DIAGNOSTICS -->
-    <div class="tab-panel" id="tab-telemetry">
-      <div class="info-card">
-        <div class="info-row">
-          <div>
-            <strong>Diagnostica &amp; Telemetria Live via Cavo USB (9600 baud)</strong>
-            <p class="release-notes">Connetti Smarty via USB per leggere in tempo reale stato, indirizzo IP locale, temperatura SoC, RAM, SinricPro e inviare comandi rapidi.</p>
+    <!-- ================================================================== -->
+    <!-- VIEW 2: DIAGNOSTICS (LIVE USB TELEMETRY LIST)                      -->
+    <!-- ================================================================== -->
+    <section class="view-panel" id="view-diagnostics" role="tabpanel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">USB Diagnostics</h2>
+          <p class="section-sub">Inspect real-time hardware telemetry, Wi-Fi, thermal state, and OTA partition directly over USB.</p>
+        </div>
+        <button type="button" class="secondary-btn" id="usbDiagBtn">Connect USB Telemetry</button>
+      </div>
+
+      <!-- Quick USB Device Actions -->
+      <div class="quick-actions-bar" id="diagActionsBar">
+        <div class="conn-indicator">
+          <span class="status-dot" id="diagConnDot"></span>
+          <span id="diagConnLabel">Not connected</span>
+        </div>
+        <div class="quick-actions-btns">
+          <button type="button" class="pill-btn" id="diagRefreshBtn" disabled>Refresh</button>
+          <button type="button" class="pill-btn" id="diagFotaBtn" disabled>Check Cloud FOTA</button>
+          <button type="button" class="pill-btn danger" id="diagRebootBtn" disabled>Reboot Device</button>
+        </div>
+      </div>
+
+      <!-- Grouped Key-Value Telemetry List -->
+      <div class="list-group">
+        <div class="list-row compact">
+          <span class="kv-label">Hardware ID &amp; Product</span>
+          <span class="kv-val mono" id="tHwId">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Firmware &amp; OTA Slot</span>
+          <span class="kv-val mono" id="tFwPart">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Operating State</span>
+          <span class="kv-val" id="tModeState">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Wi-Fi Network &amp; Signal</span>
+          <span class="kv-val" id="tWifi">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Local Web Portal</span>
+          <span class="kv-val" id="tIpLink">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Cloud Sync</span>
+          <span class="kv-val" id="tCloud">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">MCU Temp &amp; Free Memory</span>
+          <span class="kv-val mono" id="tTempHeap">—</span>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Session / Total Uptime</span>
+          <span class="kv-val mono" id="tUptime">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- VIEW 3: TOOLS (CUSTOM .BIN, SERIAL CONSOLE, ASSETS & GUIDE)        -->
+    <!-- ================================================================== -->
+    <section class="view-panel" id="view-tools" role="tabpanel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Developer &amp; Field Tools</h2>
+          <p class="section-sub">Local binary flashing with SHA-256 verification, interactive USB console, and direct firmware assets.</p>
+        </div>
+      </div>
+
+      <!-- Tool 1: Custom Local .bin Flash -->
+      <div class="group-caption">Custom Local Firmware (.bin)</div>
+      <div class="list-group">
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title" id="localBinName">Select local firmware.bin</span>
+            <span class="row-sub mono" id="localBinMeta">Flash a compiled PlatformIO binary over Native USB-FOTA (CRC-16)</span>
           </div>
-          <button class="btn-flash" id="usbDiagBtn" style="width:auto; padding:10px 18px; font-size:13.5px;">
-            Connetti Telemetria USB
-          </button>
+          <div class="list-row-control">
+            <input type="file" id="localBinInput" accept=".bin" hidden />
+            <button type="button" class="pill-btn" id="chooseBinBtn">Choose File…</button>
+          </div>
         </div>
-
-        <div class="telem-grid">
-          <div class="kpi-box"><div class="kpi-label">Hardware ID / Profilo</div><div class="kpi-val" id="tHwId">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Versione Firmware / Partizione</div><div class="kpi-val" id="tFwPart">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Stato &amp; Modalità Attiva</div><div class="kpi-val" id="tModeState">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Rete Wi-Fi &amp; Segnale RSSI</div><div class="kpi-val" id="tWifi">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Web Server Locale (IP)</div><div class="kpi-val" id="tIpLink">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Cloud SinricPro / Alexa</div><div class="kpi-val" id="tCloud">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Temperatura SoC / RAM Libera</div><div class="kpi-val" id="tTempHeap">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Uptime / Tempo Totale Acceso</div><div class="kpi-val" id="tUptime">--</div></div>
-          <div class="kpi-box"><div class="kpi-label">Ultima Accensione / Spegnimento</div><div class="kpi-val" id="tOnOffTs" style="font-size:12px;">--</div></div>
-        </div>
-
-        <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <button class="btn-secondary" onclick="sendUsbCmd({power:1})">Accendi</button>
-          <button class="btn-secondary" onclick="sendUsbCmd({power:0})">Spegni</button>
-          <button class="btn-secondary" onclick="sendUsbCmd({mode:'Orario'})">Modo Orario</button>
-          <button class="btn-secondary" onclick="sendUsbCmd({mode:'Cuore'})">Modo Cuore</button>
-          <button class="btn-secondary" onclick="sendUsbCmd({mode:'Rainbow'})">Modo Rainbow</button>
-          <input type="text" id="usbScrollTxt" placeholder="Testo scorrevole..." style="background:#05070c; color:#fff; border:1px solid rgba(255,255,255,0.16); padding:7px 10px; border-radius:8px; font-size:12.5px;">
-          <button class="btn-secondary" onclick="sendUsbScroll()">Invia Testo</button>
-        </div>
-
-        <div class="console-box" id="usbSerialLog" style="height:120px; margin-top:12px;"></div>
-      </div>
-    </div>
-
-    <!-- TAB 3: PRODUCT SPECS & PARTITION LAYOUT -->
-    <div class="tab-panel" id="tab-specs">
-      <div class="info-card">
-        <strong>Mappa Flash 8MB Dual-OTA (Scrittura Sicura senza Cancellazione NVS)</strong>
-        <div class="part-bar">
-          <div class="part-seg" style="width:8%; background:#38bdf8;" title="0x0000 Bootloader">Boot</div>
-          <div class="part-seg" style="width:6%; background:#818cf8;" title="0x8000 Partitions">Part</div>
-          <div class="part-seg" style="width:12%; background:#fbbf24;" title="0x9000 NVS (Preservata!)">NVS (Intatta)</div>
-          <div class="part-seg" style="width:6%; background:#a78bfa;" title="0x11000 OTA Data">OTA</div>
-          <div class="part-seg" style="width:28%; background:#10b981;" title="0x20000 App0 (3.25 MB)">App0 (0x20000)</div>
-          <div class="part-seg" style="width:28%; background:#059669;" title="0x360000 App1 (3.25 MB)">App1 (FOTA)</div>
-          <div class="part-seg" style="width:12%; background:#64748b;" title="0x6A0000 SPIFFS">SPIFFS</div>
-        </div>
-        <div class="telem-grid">
-          <div class="kpi-box"><div class="kpi-label">Microcontrollore</div><div class="kpi-val">ESP32-S3 Dual-Core 240MHz</div></div>
-          <div class="kpi-box"><div class="kpi-label">Sistema Operativo</div><div class="kpi-val">FreeRTOS (Core 0 Rete / Core 1 UI)</div></div>
-          <div class="kpi-box"><div class="kpi-label">Display LED</div><div class="kpi-val">Matrice 23x5 (115 NeoPixel GRB)</div></div>
-          <div class="kpi-box"><div class="kpi-label">Integrazioni Smart Home</div><div class="kpi-val">Alexa, SinricPro &amp; Local Web Hub</div></div>
-          <div class="kpi-box"><div class="kpi-label">Indirizzo mDNS Locale</div><div class="kpi-val">http://smarty.local</div></div>
-          <div class="kpi-box"><div class="kpi-label">Sicurezza Aggiornamenti</div><div class="kpi-val">Dual-OTA Rollback Protection</div></div>
+        <div class="list-row" id="localBinActionRow" style="display:none;">
+          <div class="list-row-label">
+            <span class="row-title">SHA-256 Checksum</span>
+            <span class="row-sub mono sha-text" id="localBinSha">—</span>
+          </div>
+          <div class="list-row-control">
+            <button type="button" class="pill-btn primary" id="flashLocalBinBtn">Flash Local .bin</button>
+          </div>
         </div>
       </div>
+
+      <!-- Tool 2: Interactive USB Serial Console -->
+      <div class="group-caption">Interactive USB Serial Console</div>
+      <div class="list-group">
+        <div class="list-row">
+          <div class="list-row-label">
+            <span class="row-title">Send Serial Command</span>
+            <span class="row-sub">Requires active USB Diagnostics session (e.g. <code>telemetry</code> or JSON)</span>
+          </div>
+          <div class="list-row-control cmd-control">
+            <input type="text" id="serialCmdInput" class="apple-input mono" placeholder='telemetry' autocomplete="off" />
+            <button type="button" class="pill-btn primary" id="sendSerialCmdBtn" disabled>Send</button>
+          </div>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Session Log Export</span>
+          <div class="console-btns">
+            <button type="button" class="pill-btn" id="exportLogBtn">Download .txt</button>
+            <button type="button" class="pill-btn" id="toolsCopyLogBtn">Copy Log</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tool 3: Direct Firmware Assets & Share Link -->
+      <div class="group-caption">Current Selection Assets</div>
+      <div class="list-group">
+        <div class="list-row compact">
+          <span class="kv-label">Direct Firmware Binary</span>
+          <a href="#" id="toolDownloadBin" class="link-action" download>Download firmware.bin ↓</a>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Release Manifest (JSON)</span>
+          <a href="#" id="toolOpenManifest" class="link-action" target="_blank" rel="noopener">Open version.json ↗</a>
+        </div>
+        <div class="list-row compact">
+          <span class="kv-label">Direct Product Link</span>
+          <button type="button" class="link-action" id="copyDeepLinkBtn">Copy Share URL</button>
+        </div>
+      </div>
+
+      <!-- Tool 4: Architecture Reference (Collapsed by default) -->
+      <details class="disclosure-row" style="margin-top:24px;">
+        <summary>
+          <span>How Hybrid USB-FOTA Works</span>
+          <span class="disclosure-hint">Read</span>
+        </summary>
+        <div class="guide-body">
+          <p><strong>Native USB-FOTA</strong> — Probes the connected MAICXEN EDGE device without triggering a bootloader reset and streams the firmware into the secondary OTA partition with per-chunk <strong>CRC-16/CCITT</strong> integrity verification.</p>
+          <p><strong>Bootloader Fallback</strong> — For blank ESP32/ESP32-S3 modules or legacy builds, automatically switches to <strong>esptool-js</strong> while preserving stored Wi-Fi, Matter, and NVS partitions.</p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <!-- Minimal Apple-style Footer with Monochrome MAICXEN EDGE Logo -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <img
+        src="./shared/assets/logo-maicxen-edge-bw.png"
+        alt="MAICXEN EDGE"
+        class="footer-logo"
+      />
+      <div class="footer-text">
+        <span>© 2026 MAICXEN EDGE</span>
+        <span class="sep">·</span>
+        <span>iot.maicxen.it</span>
+        <span class="sep">·</span>
+        <span>Web Flasher v2.4.0</span>
+      </div>
     </div>
-  </div>
+  </footer>
 
-  <script type="module">
-    import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.4.5/bundle.js";
-
-    window.switchTab = function(tabId, btnEl) {
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById("tab-" + tabId).classList.add("active");
-      btnEl.classList.add("active");
-    };
-
-    const MATRIX_W = 23, MATRIX_H = 5;
-    const START_BITMAP = [
-      1,1,1,0,1,0,1,0,0,1,0,0,1,1,0,0,1,1,1,0,1,0,1,
-      1,0,0,0,1,1,1,0,1,0,1,0,1,0,1,0,0,1,0,0,1,0,1,
-      1,1,1,0,1,0,1,0,1,1,1,0,1,1,0,0,0,1,0,0,0,1,0,
-      0,0,1,0,1,0,1,0,1,0,1,0,1,1,0,0,0,1,0,0,0,1,0,
-      1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,0,0,1,0
-    ];
-
-    const matrixEl = document.getElementById("ledMatrix");
-    const pixels = [];
-    for (let i = 0; i < MATRIX_W * MATRIX_H; i++) {
-      const d = document.createElement("div");
-      d.className = "led-pixel";
-      matrixEl.appendChild(d);
-      pixels.push(d);
-    }
-
-    function renderIdleBitmap(isError = false, customHex = null) {
-      for (let i = 0; i < MATRIX_W * MATRIX_H; i++) {
-        pixels[i].style.background = "";
-        pixels[i].style.boxShadow = "";
-        if (START_BITMAP[i]) {
-          if (customHex) {
-            pixels[i].style.background = customHex;
-            pixels[i].style.boxShadow = `0 0 8px ${customHex}`;
-          } else {
-            pixels[i].className = "led-pixel " + (isError ? "on-err" : "on-green");
-          }
-        } else {
-          pixels[i].className = "led-pixel";
-        }
-      }
-    }
-
-    function renderMatrixProgress(pct) {
-      const filledCols = Math.floor((pct * MATRIX_W) / 100);
-      for (let r = 0; r < MATRIX_H; r++) {
-        for (let c = 0; c < MATRIX_W; c++) {
-          const idx = r * MATRIX_W + c;
-          pixels[idx].style.background = "";
-          pixels[idx].style.boxShadow = "";
-          if (pct >= 100) {
-            pixels[idx].className = "led-pixel on-green";
-          } else if (c < filledCols) {
-            pixels[idx].className = (r >= 1 && r <= 3) ? "led-pixel on-green" : "led-pixel on-blue";
-          } else if (r === 0 || r === MATRIX_H - 1) {
-            pixels[idx].className = "led-pixel on-blue";
-          } else {
-            pixels[idx].className = "led-pixel";
-          }
-        }
-      }
-    }
-
-    renderIdleBitmap();
-
-    const fwVersionEl = document.getElementById("fwVersion");
-    const fwNotesEl = document.getElementById("fwNotes");
-    const modeBadgeEl = document.getElementById("modeBadge");
-    const flashBtn = document.getElementById("flashBtn");
-    const progressSection = document.getElementById("progressSection");
-    const progressStep = document.getElementById("progressStep");
-    const progressPct = document.getElementById("progressPct");
-    const progressFill = document.getElementById("progressFill");
-    const statusBanner = document.getElementById("statusBanner");
-    const consoleLog = document.getElementById("consoleLog");
-    const consoleDetails = document.getElementById("consoleDetails");
-
-    let manifestData = null;
-
-    function logLine(msg) {
-      consoleLog.textContent += msg + "\n";
-      consoleLog.scrollTop = consoleLog.scrollHeight;
-    }
-
-    function setStatus(type, message) {
-      if (!type) {
-        statusBanner.className = "status-banner";
-        statusBanner.textContent = "";
-        return;
-      }
-      statusBanner.className = `status-banner ${type}`;
-      statusBanner.textContent = message;
-    }
-
-    function updateProgress(stepText, pct) {
-      const clamped = Math.max(0, Math.min(100, Math.round(pct)));
-      progressSection.classList.add("active");
-      progressStep.textContent = stepText;
-      progressPct.textContent = `${clamped}%`;
-      progressFill.style.width = `${clamped}%`;
-      document.getElementById("matrixStatusRight").textContent = `${stepText} (${clamped}%)`;
-      renderMatrixProgress(clamped);
-    }
-
-    const espLoaderTerminal = {
-      clean() { consoleLog.textContent = ""; },
-      writeLine(data) { logLine(data); },
-      write(data) {
-        consoleLog.textContent += data;
-        consoleLog.scrollTop = consoleLog.scrollHeight;
-      }
-    };
-
-    async function loadManifest() {
-      try {
-        const res = await fetch(`./manifest.json?cb=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        manifestData = await res.json();
-        fwVersionEl.textContent = `v${manifestData.version}`;
-        fwNotesEl.textContent = manifestData.release_notes || "Pronto per l'installazione via WebSerial.";
-      } catch (err) {
-        fwVersionEl.textContent = "Errore";
-        fwNotesEl.textContent = "Impossibile caricare manifest.json: " + err.message;
-        flashBtn.disabled = true;
-      }
-    }
-
-    if (!("serial" in navigator)) {
-      setStatus("warning", "Il tuo browser non supporta WebSerial. Apri questo link con Google Chrome, Microsoft Edge o Opera su PC/Mac.");
-      flashBtn.disabled = true;
-    } else {
-      loadManifest();
-    }
-
-    // CRC-16/CCITT-FALSE per verifica pacchetti USB FOTA
-    function computeCrc16Ccitt(uint8Arr) {
-      let crc = 0xFFFF;
-      for (let i = 0; i < uint8Arr.length; i++) {
-        crc ^= (uint8Arr[i] << 8);
-        for (let b = 0; b < 8; b++) {
-          if ((crc & 0x8000) !== 0) {
-            crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-          } else {
-            crc = (crc << 1) & 0xFFFF;
-          }
-        }
-      }
-      return crc & 0xFFFF;
-    }
-
-    function isVersionAtLeast(verStr, minMajor, minMinor, minPatch) {
-      if (!verStr) return false;
-      const parts = String(verStr).split(".").map(n => parseInt(n, 10) || 0);
-      const [maj = 0, min = 0, pat = 0] = parts;
-      if (maj !== minMajor) return maj > minMajor;
-      if (min !== minMinor) return min > minMinor;
-      return pat >= minPatch;
-    }
-
-    /**
-     * Fase 1: Interroga il dispositivo a 9600 baud (senza resettarlo in bootloader)
-     * per leggere la versione firmware installata e verificare il supporto FOTA USB.
-     */
-    async function probeDeviceVersion(port) {
-      let reader = null;
-      try {
-        await port.open({ baudRate: 9600 });
-        try {
-          await port.setSignals({ dataTerminalReady: false, requestToSend: false });
-        } catch (_) {}
-
-        const writer = port.writable.getWriter();
-        await writer.write(new TextEncoder().encode("\ntelemetry\n"));
-        writer.releaseLock();
-
-        reader = port.readable.getReader();
-        const decoder = new TextDecoder();
-        let buf = "";
-        const deadline = Date.now() + 1400;
-
-        while (Date.now() < deadline) {
-          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ timeout: true }), 250));
-          const res = await Promise.race([reader.read(), timeoutPromise]);
-          if (res.timeout) continue;
-          if (res.done) break;
-          if (res.value) {
-            buf += decoder.decode(res.value, { stream: true });
-            let nl;
-            while ((nl = buf.indexOf("\n")) >= 0) {
-              const line = buf.slice(0, nl).trim();
-              buf = buf.slice(nl + 1);
-              if (line.startsWith("SMARTY_TELEMETRY:")) {
-                const json = JSON.parse(line.slice("SMARTY_TELEMETRY:".length));
-                await reader.cancel();
-                reader.releaseLock();
-                reader = null;
-                await port.close();
-                return json;
-              }
-            }
-          }
-        }
-      } catch (_) {}
-
-      if (reader) {
-        try { await reader.cancel(); reader.releaseLock(); } catch (_) {}
-      }
-      try { await port.close(); } catch (_) {}
-      return null;
-    }
-
-    /**
-     * Procedura A: Aggiornamento Nativo FOTA via USB Serial ad alta velocità (921600 baud)
-     * Attiva la stessa identica procedura di FotaManager (Update sulla partizione OTA gemella +
-     * barra di progresso a 23 colonne sulla matrice LED fisica di Smarty + Rollback Protection).
-     */
-    async function runNativeUsbFota(port, fwBytes, targetVer) {
-      const otaBaud = 921600;
-      let reader = null;
-
-      try {
-        // 1. Invia comando di avvio FOTA USB a 9600 baud
-        await port.open({ baudRate: 9600 });
-        try { await port.setSignals({ dataTerminalReady: false, requestToSend: false }); } catch (_) {}
-
-        let writer = port.writable.getWriter();
-        const startCmd = JSON.stringify({ cmd: "serial_ota_start", size: fwBytes.length, baud: otaBaud }) + "\n";
-        await writer.write(new TextEncoder().encode(startCmd));
-        writer.releaseLock();
-
-        // Attende conferma "SMARTY_OTA_SWITCH:921600"
-        reader = port.readable.getReader();
-        const decoder = new TextDecoder();
-        let buf = "";
-        let switchConfirmed = false;
-        const switchDeadline = Date.now() + 2000;
-
-        while (Date.now() < switchDeadline && !switchConfirmed) {
-          const r = await Promise.race([
-            reader.read(),
-            new Promise(res => setTimeout(() => res({ timeout: true }), 250))
-          ]);
-          if (r.timeout) continue;
-          if (r.done) break;
-          if (r.value) {
-            buf += decoder.decode(r.value, { stream: true });
-            if (buf.includes("SMARTY_OTA_SWITCH:")) {
-              switchConfirmed = true;
-              break;
-            }
-          }
-        }
-
-        await reader.cancel();
-        reader.releaseLock();
-        reader = null;
-        await port.close();
-
-        if (!switchConfirmed) {
-          throw new Error("Handshake SMARTY_OTA_SWITCH non ricevuto");
-        }
-
-        await new Promise(r => setTimeout(r, 120));
-
-        // 2. Riapre la porta a 921600 baud e sincronizza il ricevitore FOTA
-        await port.open({ baudRate: otaBaud, bufferSize: 16384 });
-        try { await port.setSignals({ dataTerminalReady: false, requestToSend: false }); } catch (_) {}
-
-        writer = port.writable.getWriter();
-        await writer.write(new TextEncoder().encode("OTA_SYNC\n"));
-        writer.releaseLock();
-
-        reader = port.readable.getReader();
-        buf = "";
-
-        const readLineWithTimeout = async (ms) => {
-          const end = Date.now() + ms;
-          while (Date.now() < end) {
-            const nl = buf.indexOf("\n");
-            if (nl >= 0) {
-              const line = buf.slice(0, nl).trim();
-              buf = buf.slice(nl + 1);
-              return line;
-            }
-            const r = await Promise.race([
-              reader.read(),
-              new Promise(res => setTimeout(() => res({ timeout: true }), 200))
-            ]);
-            if (r.timeout) continue;
-            if (r.done) return null;
-            if (r.value) buf += decoder.decode(r.value, { stream: true });
-          }
-          return null;
-        };
-
-        let ready = false;
-        const readyDeadline = Date.now() + 2500;
-        while (Date.now() < readyDeadline) {
-          const line = await readLineWithTimeout(400);
-          if (!line) continue;
-          logLine(`[Smarty USB FOTA] ${line}`);
-          if (line.includes("SMARTY_OTA_READY")) {
-            ready = true;
-            break;
-          }
-          if (line.includes("OTA_ERR")) {
-            throw new Error(line);
-          }
-        }
-
-        if (!ready) {
-          throw new Error("Timeout in attesa di SMARTY_OTA_READY");
-        }
-
-        logLine(`[Smarty USB FOTA] Barra di progresso attivata sulla matrice LED 23x5 del dispositivo.`);
-        updateProgress(`Invio FOTA USB v${targetVer} al dispositivo...`, 12);
-
-        // 3. Invia il firmware a blocchi di 2048 byte con header [0xA5, 0x5A, len_lo, len_hi, crc_lo, crc_hi]
-        const chunkSize = 2048;
-        let offset = 0;
-        let retries = 0;
-
-        while (offset < fwBytes.length) {
-          const end = Math.min(offset + chunkSize, fwBytes.length);
-          const slice = fwBytes.subarray(offset, end);
-          const len = slice.length;
-          const crc = computeCrc16Ccitt(slice);
-
-          const packet = new Uint8Array(6 + len);
-          packet[0] = 0xA5;
-          packet[1] = 0x5A;
-          packet[2] = len & 0xFF;
-          packet[3] = (len >> 8) & 0xFF;
-          packet[4] = crc & 0xFF;
-          packet[5] = (crc >> 8) & 0xFF;
-          packet.set(slice, 6);
-
-          writer = port.writable.getWriter();
-          await writer.write(packet);
-          writer.releaseLock();
-
-          const respLine = await readLineWithTimeout(3000);
-          if (!respLine) {
-            throw new Error(`Timeout ACK al byte ${offset}`);
-          }
-
-          if (respLine.startsWith("ACK:")) {
-            offset = end;
-            retries = 0;
-            const devPct = parseInt(respLine.slice(4), 10) || Math.round((offset * 100) / fwBytes.length);
-            const uiPct = 12 + Math.round((offset / fwBytes.length) * 86);
-            updateProgress(`FOTA USB su Matrice LED (${devPct}%)...`, uiPct);
-          } else if (respLine === "NAK") {
-            retries++;
-            logLine(`[Smarty USB FOTA] Ritrasmissione blocco @ ${offset} (tentativo ${retries}/4)...`);
-            if (retries > 4) throw new Error("Troppi errori CRC sulla linea seriale");
-          } else if (respLine.startsWith("OTA_ERR")) {
-            throw new Error(respLine);
-          }
-        }
-
-        // Attende conferma finale OTA_OK e riavvio automatico
-        const finalLine = await readLineWithTimeout(3000);
-        if (finalLine) logLine(`[Smarty USB FOTA] ${finalLine}`);
-
-        await reader.cancel();
-        reader.releaseLock();
-        reader = null;
-        await port.close();
-
-        updateProgress("Aggiornamento FOTA USB completato! Riavvio di Smarty...", 100);
-        setStatus(
-          "success",
-          `Firmware v${targetVer} installato tramite procedura nativa FOTA USB! La barra LED su Smarty ha raggiunto il 100% e il dispositivo si sta riavviando.`
-        );
-        return true;
-      } catch (err) {
-        logLine(`[Smarty USB FOTA] Avviso: ${err.message || err}`);
-        if (reader) {
-          try { await reader.cancel(); reader.releaseLock(); } catch (_) {}
-        }
-        try { await port.close(); } catch (_) {}
-        return false;
-      }
-    }
-
-    /**
-     * Procedura B (Fallback / Firmware < v1.5.0): Programmazione Classica con esptool-js
-     * senza cancellare la partizione NVS (eraseAll: false).
-     */
-    async function runClassicEsptoolFlash(port) {
-      let transport = null;
-      try {
-        modeBadgeEl.textContent = "Modalità: Bootloader esptool-js (No Erase)";
-        updateProgress("Connessione Bootloader ESP32-S3 (esptool-js)...", 4);
-
-        transport = new Transport(port, true);
-        const esploader = new ESPLoader({
-          transport,
-          baudrate: 460800,
-          terminal: espLoaderTerminal
-        });
-
-        const chipName = await esploader.main();
-        logLine(`Chip rilevato in bootloader: ${chipName}`);
-
-        const parts = manifestData.builds[0].parts;
-        const fileArray = [];
-        for (let i = 0; i < parts.length; i++) {
-          const p = parts[i];
-          updateProgress(`Download ${p.path}...`, 6 + Math.round((i / parts.length) * 9));
-          logLine(`Download ${p.path} (offset 0x${p.offset.toString(16)})...`);
-          const res = await fetch(`${p.path}?cb=${Date.now()}`, { cache: "no-store" });
-          if (!res.ok) throw new Error(`Impossibile scaricare ${p.path} (HTTP ${res.status})`);
-          const buf = await res.arrayBuffer();
-          fileArray.push({
-            data: esploader.ui8ToBstr(new Uint8Array(buf)),
-            address: p.offset
-          });
-        }
-
-        const totalLengths = fileArray.map(f => f.data.length);
-        const grandTotal = totalLengths.reduce((acc, v) => acc + v, 0);
-
-        updateProgress("Scrittura partizioni su ESP32-S3...", 15);
-        await esploader.writeFlash({
-          fileArray,
-          flashSize: "keep",
-          flashMode: "keep",
-          flashFreq: "keep",
-          eraseAll: false,
-          compress: true,
-          reportProgress: (fileIndex, written, total) => {
-            let prevBytes = 0;
-            for (let k = 0; k < fileIndex; k++) prevBytes += totalLengths[k];
-            const currentFileEstimate = total > 0 ? (written / total) * totalLengths[fileIndex] : 0;
-            const overallRatio = (prevBytes + currentFileEstimate) / grandTotal;
-            const pct = 15 + overallRatio * 83;
-            const partLabel = parts[fileIndex]?.label || parts[fileIndex]?.path || "Partizione";
-            updateProgress(`Scrittura ${partLabel}...`, pct);
-          }
-        });
-
-        updateProgress("Riavvio automatico di Smarty...", 99);
-        logLine("Reset hardware ESP32-S3...");
-        await transport.setDTR(false);
-        await transport.setRTS(true);
-        await new Promise(r => setTimeout(r, 120));
-        await transport.setRTS(false);
-        await transport.disconnect();
-        transport = null;
-
-        updateProgress("Installazione completata!", 100);
-        setStatus(
-          "success",
-          `Firmware v${manifestData.version} installato con successo tramite esptool-js! La memoria NVS è stata preservata e Smarty è ora abilitato al FOTA USB nativo per i prossimi aggiornamenti.`
-        );
-      } finally {
-        if (transport) {
-          try { await transport.disconnect(); } catch (_) {}
-        }
-      }
-    }
-
-    // Disconnette eventuale sessione diagnostica prima del flash
-    let diagPort = null;
-    let diagReader = null;
-    let diagTimer = null;
-
-    async function closeUsbDiagnostics() {
-      if (diagTimer) { clearInterval(diagTimer); diagTimer = null; }
-      if (diagReader) {
-        try { await diagReader.cancel(); } catch (_) {}
-        diagReader = null;
-      }
-      if (diagPort) {
-        try { await diagPort.close(); } catch (_) {}
-        diagPort = null;
-      }
-      document.getElementById("usbDiagBtn").textContent = "Connetti Telemetria USB";
-    }
-
-    flashBtn.addEventListener("click", async () => {
-      if (!manifestData || !manifestData.builds || !manifestData.builds[0]) return;
-      await closeUsbDiagnostics();
-
-      let port = null;
-      try {
-        setStatus(null, "");
-        port = await navigator.serial.requestPort();
-
-        flashBtn.disabled = true;
-        espLoaderTerminal.clean();
-        updateProgress("Controllo versione firmware installata su Smarty...", 2);
-        logLine("[WebFlasher] Interrogazione versione installata a 9600 baud...");
-
-        const devInfo = await probeDeviceVersion(port);
-        const supportsSerialOta = devInfo && (devInfo.serial_ota === true || isVersionAtLeast(devInfo.fw, 1, 5, 0));
-
-        if (devInfo) {
-          logLine(`[WebFlasher] Rilevato ${devInfo.hw_id} con firmware v${devInfo.fw} (partizione: ${devInfo.ota_part}).`);
-        } else {
-          logLine("[WebFlasher] Nessuna telemetria FOTA USB rilevata (firmware antecedente o dispositivo non inizializzato).");
-        }
-
-        if (supportsSerialOta) {
-          modeBadgeEl.textContent = `Modalità: FOTA USB Nativo (da v${devInfo.fw} -> v${manifestData.version})`;
-          logLine(`[WebFlasher] Firmware >= v1.5.0 rilevato: avvio procedura FOTA nativa via USB!`);
-          updateProgress("Download firmware.bin per FOTA USB...", 6);
-
-          const fwRes = await fetch(`firmware.bin?cb=${Date.now()}`, { cache: "no-store" });
-          if (!fwRes.ok) throw new Error(`Impossibile scaricare firmware.bin (HTTP ${fwRes.status})`);
-          const fwBytes = new Uint8Array(await fwRes.arrayBuffer());
-
-          const fotaOk = await runNativeUsbFota(port, fwBytes, manifestData.version);
-          if (!fotaOk) {
-            logLine("[WebFlasher] Passaggio automatico al Flashing Classico esptool-js di backup...");
-            await runClassicEsptoolFlash(port);
-          }
-        } else {
-          const reason = devInfo ? `versione v${devInfo.fw} < v1.5.0` : "assenza supporto FOTA USB";
-          logLine(`[WebFlasher] Rilevata ${reason}: eseguo il Flashing Classico tramite esptool-js...`);
-          await runClassicEsptoolFlash(port);
-        }
-      } catch (err) {
-        consoleDetails.open = true;
-        renderIdleBitmap(true);
-        logLine(`ERRORE: ${err.message || err}`);
-        setStatus("error", `Installazione interrotta: ${err.message || err}`);
-      } finally {
-        flashBtn.disabled = false;
-      }
-    });
-
-    // --- LIVE USB TELEMETRY & CONTROL ---
-    function fmtDur(s) {
-      s = Number(s) || 0;
-      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-      return h > 0 ? `${h}h ${m}m ${sec}s` : `${m}m ${sec}s`;
-    }
-
-    function fmtTs(ts) {
-      ts = Number(ts) || 0;
-      return ts > 1700000000 ? new Date(ts * 1000).toLocaleString("it-IT") : "N/D";
-    }
-
-    function updateTelemetryUI(t) {
-      document.getElementById("tHwId").textContent = `${t.hw_id} (${t.profile})`;
-      document.getElementById("tFwPart").textContent = `v${t.fw} (${t.ota_part})`;
-      document.getElementById("tModeState").textContent = `${t.power ? "ACCESO" : "SPENTO"} • ${t.mode} (${t.brightness}%)`;
-      document.getElementById("tWifi").textContent = t.wifi_ssid ? `${t.wifi_ssid} (${t.rssi} dBm)` : "Disconnesso";
-      const ipEl = document.getElementById("tIpLink");
-      if (t.wifi_ip && t.wifi_ip !== "0.0.0.0") {
-        ipEl.innerHTML = `<a href="http://${t.wifi_ip}" target="_blank" style="color:#38bdf8;">http://${t.wifi_ip} &nearr;</a>`;
-      } else {
-        ipEl.textContent = "N/D";
-      }
-      document.getElementById("tCloud").textContent = t.cloud_online ? "Connesso (ONLINE)" : "Disconnesso";
-      document.getElementById("tTempHeap").textContent = `${Number(t.temp).toFixed(1)}°C • ${Math.round(t.heap_free / 1024)} KB liberi`;
-      document.getElementById("tUptime").textContent = `${fmtDur(t.uptime)} / Tot: ${fmtDur(t.total_on_sec)}`;
-      document.getElementById("tOnOffTs").textContent = `ON: ${fmtTs(t.last_on_ts)} | OFF: ${fmtTs(t.last_off_ts)}`;
-      document.getElementById("matrixStatusRight").textContent = `${t.hw_id} • ${t.mode} (${t.hex})`;
-      renderIdleBitmap(false, t.power ? t.hex : "#1e293b");
-    }
-
-    window.sendUsbCmd = async function(obj) {
-      if (!diagPort || !diagPort.writable) {
-        alert("Connetti prima la Telemetria USB!");
-        return;
-      }
-      const writer = diagPort.writable.getWriter();
-      const line = JSON.stringify(obj) + "\n";
-      await writer.write(new TextEncoder().encode(line));
-      writer.releaseLock();
-    };
-
-    window.sendUsbScroll = function() {
-      const txt = document.getElementById("usbScrollTxt").value.trim();
-      if (txt) window.sendUsbCmd({ scroll: txt });
-    };
-
-    document.getElementById("usbDiagBtn").addEventListener("click", async () => {
-      if (diagPort) {
-        await closeUsbDiagnostics();
-        return;
-      }
-      try {
-        diagPort = await navigator.serial.requestPort();
-        await diagPort.open({ baudRate: 9600 });
-        document.getElementById("usbDiagBtn").textContent = "Disconnetti USB";
-
-        const logBox = document.getElementById("usbSerialLog");
-        logBox.textContent = "[USB] Connesso a 9600 baud. Richiesta telemetria...\n";
-
-        const requestTelemetry = async () => {
-          if (!diagPort || !diagPort.writable) return;
-          try {
-            const writer = diagPort.writable.getWriter();
-            await writer.write(new TextEncoder().encode("telemetry\n"));
-            writer.releaseLock();
-          } catch (_) {}
-        };
-
-        await requestTelemetry();
-        diagTimer = setInterval(requestTelemetry, 2500);
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        diagReader = diagPort.readable.getReader();
-        while (true) {
-          const { value, done } = await diagReader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let nl;
-          while ((nl = buffer.indexOf("\n")) >= 0) {
-            const line = buffer.slice(0, nl).trim();
-            buffer = buffer.slice(nl + 1);
-            if (line.startsWith("SMARTY_TELEMETRY:")) {
-              try {
-                const json = JSON.parse(line.slice("SMARTY_TELEMETRY:".length));
-                updateTelemetryUI(json);
-              } catch (_) {}
-            } else if (line.length > 0) {
-              logBox.textContent += line + "\n";
-              logBox.scrollTop = logBox.scrollHeight;
-            }
-          }
-        }
-      } catch (err) {
-        await closeUsbDiagnostics();
-      }
-    });
-  </script>
+  <script type="module" src="./flasher/js/main.js"></script>
 </body>
 </html>
