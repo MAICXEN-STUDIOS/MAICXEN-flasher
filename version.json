@@ -1,6 +1,0 @@
-{
-  "version": "1.5.0",
-  "name": "Smarty",
-  "firmware_url": "https://raw.githubusercontent.com/MAICXEN-STUDIOS/smarty-flasher/main/firmware.bin",
-  "release_notes": "Rilascio v1.5.0: Procedura FOTA Nativa via USB Serial ad alta velocita (921600 baud con CRC16, barra di progresso LED 23x5 sul dispositivo e Dual-OTA Rollback Protection) con rilevamento automatico della versione e fallback automatico a esptool-js per i firmware precedenti."
-}
