@@ -1,0 +1,21 @@
+{
+  "product_id": "smarty",
+  "product_name": "Smarty",
+  "model_id": "esp32s3-std",
+  "model_name": "Smarty 23×5 RGB Matrix (ESP32-S3)",
+  "chip": "ESP32-S3",
+  "hw_rev": "1.0",
+  "offsets": [
+    0,
+    32768,
+    69632,
+    131072
+  ],
+  "version": "1.6.1",
+  "url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
+  "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
+  "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
+  "partitions_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/partitions.bin",
+  "boot_app0_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/boot_app0.bin",
+  "notes": "v1.6.1 — Enabled native ESP32-S3 USB-CDC (HWCDC) alongside UART0 for zero-reset Live USB Telemetry and WebSerial FOTA."
+}
