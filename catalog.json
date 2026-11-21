@@ -1,0 +1,127 @@
+{
+  "organization": "MAICXEN EDGE",
+  "domain": "iot.maicxen.it",
+  "flasher_version": "2.4.0",
+  "dashboard_version": "3.2.0",
+  "updated_at": "2026-11-21T11:25:25Z",
+  "products": [
+    {
+      "product_id": "smarty",
+      "product_name": "Smarty",
+      "latest_version": "1.6.1",
+      "tagline": "23×5 Addressable RGB Matrix · Capacitive Touch · Ambient Lux · Hybrid USB/Cloud FOTA",
+      "icon": "grid",
+      "accent": "#f59e0b",
+      "models": [
+        {
+          "model_id": "esp32s3-std",
+          "model_name": "Smarty 23×5 RGB Matrix (ESP32-S3)",
+          "chip": "ESP32-S3",
+          "hw_rev": "1.0",
+          "offsets": [
+            0,
+            32768,
+            69632,
+            131072
+          ],
+          "latest_version": "1.6.1",
+          "version_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/version.json",
+          "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
+          "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
+          "partitions_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/partitions.bin",
+          "boot_app0_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/boot_app0.bin",
+          "capabilities": [
+            "power",
+            "brightness",
+            "rgb",
+            "effects",
+            "usb_fota",
+            "cloud_fota",
+            "ambient_lux",
+            "local_web",
+            "alexa"
+          ],
+          "notes": "v1.6.1 — Enabled native ESP32-S3 USB-CDC (HWCDC) alongside UART0 for zero-reset Live USB Telemetry and WebSerial FOTA."
+        }
+      ]
+    },
+    {
+      "product_id": "aleda",
+      "product_name": "AledA",
+      "latest_version": "1.1.4",
+      "tagline": "Architectural 4-Relay, 4-Dimmer & 3-Strip Controller · Local Web UI · Matter / Voice Sync",
+      "icon": "sun",
+      "accent": "#38bdf8",
+      "models": [
+        {
+          "model_id": "esp32s3-matter",
+          "model_name": "AledA Matter over Wi-Fi Controller (ESP32-S3)",
+          "chip": "ESP32-S3",
+          "hw_rev": "1.0",
+          "offsets": [
+            0,
+            32768,
+            69632,
+            131072
+          ],
+          "latest_version": "1.1.4",
+          "version_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/version.json",
+          "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
+          "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
+          "partitions_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/partitions.bin",
+          "boot_app0_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/boot_app0.bin",
+          "capabilities": [
+            "power",
+            "relays",
+            "dimmers",
+            "strips",
+            "matter",
+            "usb_fota",
+            "cloud_fota",
+            "local_web"
+          ],
+          "notes": "v1.1.4 — Fix AledA WebServer & telemetry OOM/starvation: remove 45KB resident Keep-Alive TLS & HTTPClient overhead, zero-fragmentation raw HTTP/1.1 POST + /api/status, and 45s non-blocking heartbeat."
+        }
+      ]
+    },
+    {
+      "product_id": "onir",
+      "product_name": "onIR",
+      "latest_version": "1.0.1",
+      "tagline": "Universal Matter-over-WiFi IR Bridge · NVS ON/OFF Profiles · Live IR Learning · Dual-Core",
+      "icon": "radio",
+      "accent": "#a855f7",
+      "models": [
+        {
+          "model_id": "esp32-matter",
+          "model_name": "onIR Universal IR Bridge (ESP32 Matter)",
+          "chip": "ESP32",
+          "hw_rev": "1.0",
+          "offsets": [
+            4096,
+            32768,
+            57344,
+            65536
+          ],
+          "latest_version": "1.0.1",
+          "version_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/version.json",
+          "firmware_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
+          "bootloader_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/bootloader.bin",
+          "partitions_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/partitions.bin",
+          "boot_app0_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/boot_app0.bin",
+          "capabilities": [
+            "power",
+            "ir_tx",
+            "ir_rx",
+            "ir_learn",
+            "matter",
+            "usb_fota",
+            "cloud_fota",
+            "local_web"
+          ],
+          "notes": "v1.0.1 — Fix Web UI IR form reset caused by ambient RX frames during polling + stricter IR noise filter (>= 12 edges)."
+        }
+      ]
+    }
+  ]
+}
