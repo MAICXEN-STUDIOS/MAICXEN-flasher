@@ -1,0 +1,21 @@
+{
+  "product_id": "onir",
+  "product_name": "onIR",
+  "model_id": "esp32-matter",
+  "model_name": "onIR Universal IR Bridge (ESP32 Matter)",
+  "chip": "ESP32",
+  "hw_rev": "1.0",
+  "offsets": [
+    4096,
+    32768,
+    57344,
+    65536
+  ],
+  "version": "1.0.1",
+  "url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
+  "firmware_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
+  "bootloader_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/bootloader.bin",
+  "partitions_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/partitions.bin",
+  "boot_app0_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/boot_app0.bin",
+  "notes": "v1.0.1 — Fix Web UI IR form reset caused by ambient RX frames during polling + stricter IR noise filter (>= 12 edges)."
+}
