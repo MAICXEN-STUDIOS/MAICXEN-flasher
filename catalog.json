@@ -3,20 +3,20 @@
   "domain": "iot.maicxen.it",
   "flasher_version": "2.4.0",
   "dashboard_version": "3.2.0",
-  "updated_at": "2026-11-21T12:52:56Z",
+  "updated_at": "2026-11-21T13:28:36Z",
   "products": [
     {
       "product_id": "smarty",
       "product_name": "Smarty",
       "latest_version": "1.6.1",
-      "tagline": "23×5 Addressable RGB Matrix · Capacitive Touch · Ambient Lux · Hybrid USB/Cloud FOTA",
+      "tagline": "Interactive RGB Matrix · Touch & Ambient Sensing · USB & Cloud Updates",
       "icon": "grid",
       "accent": "#f59e0b",
       "models": [
         {
           "model_id": "esp32s3-std",
-          "model_name": "Smarty 23×5 RGB Matrix (ESP32-S3)",
-          "chip": "ESP32-S3",
+          "model_name": "Smarty Ambient RGB Matrix Display",
+          "chip": "ESP32",
           "hw_rev": "1.0",
           "offsets": [
             0,
@@ -49,14 +49,14 @@
       "product_id": "aleda",
       "product_name": "AledA",
       "latest_version": "1.1.4",
-      "tagline": "Architectural 4-Relay, 4-Dimmer & 3-Strip Controller · Local Web UI · Matter / Voice Sync",
+      "tagline": "Multi-Zone Architectural Lighting & Power Controller · Local Web UI · Matter / Voice Sync",
       "icon": "sun",
       "accent": "#38bdf8",
       "models": [
         {
           "model_id": "esp32s3-matter",
-          "model_name": "AledA V1 Matter over Wi-Fi Controller (ESP32-S3 · 100×100 mm PCB V1)",
-          "chip": "ESP32-S3",
+          "model_name": "AledA V1 Smart Architectural Controller",
+          "chip": "Multi-Zone Smart Controller",
           "hw_rev": "1.0",
           "offsets": [
             0,
@@ -88,14 +88,14 @@
       "product_id": "onir",
       "product_name": "onIR",
       "latest_version": "1.0.1",
-      "tagline": "Universal Matter-over-WiFi IR Bridge · NVS ON/OFF Profiles · Live IR Learning · Dual-Core",
+      "tagline": "Universal Matter IR Bridge · Custom Profiles · Live Signal Learning",
       "icon": "radio",
       "accent": "#a855f7",
       "models": [
         {
           "model_id": "esp32-matter",
-          "model_name": "onIR Universal IR Bridge (ESP32 Matter)",
-          "chip": "ESP32",
+          "model_name": "onIR Universal Smart Home IR Bridge",
+          "chip": "Smart Wireless IR Core",
           "hw_rev": "1.0",
           "offsets": [
             4096,

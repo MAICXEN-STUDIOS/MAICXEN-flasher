@@ -2,8 +2,8 @@
   "product_id": "smarty",
   "product_name": "Smarty",
   "model_id": "esp32s3-std",
-  "model_name": "Smarty 23×5 RGB Matrix (ESP32-S3)",
-  "chip": "ESP32-S3",
+  "model_name": "Smarty Ambient RGB Matrix Display",
+  "chip": "ESP32",
   "hw_rev": "1.0",
   "offsets": [
     0,
