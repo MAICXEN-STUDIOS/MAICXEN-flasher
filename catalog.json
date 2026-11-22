@@ -3,7 +3,7 @@
   "domain": "iot.maicxen.it",
   "flasher_version": "2.4.0",
   "dashboard_version": "3.2.0",
-  "updated_at": "2026-11-21T13:28:36Z",
+  "updated_at": "2026-11-22T03:06:55Z",
   "products": [
     {
       "product_id": "smarty",
@@ -11,6 +11,7 @@
       "latest_version": "1.6.1",
       "tagline": "Interactive RGB Matrix · Touch & Ambient Sensing · USB & Cloud Updates",
       "icon": "grid",
+      "emblem": "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
       "accent": "#f59e0b",
       "models": [
         {
@@ -18,6 +19,7 @@
           "model_name": "Smarty Ambient RGB Matrix Display",
           "chip": "ESP32",
           "hw_rev": "1.0",
+          "emblem": "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
           "offsets": [
             0,
             32768,
@@ -51,6 +53,7 @@
       "latest_version": "1.1.4",
       "tagline": "Multi-Zone Architectural Lighting & Power Controller · Local Web UI · Matter / Voice Sync",
       "icon": "sun",
+      "emblem": "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
       "accent": "#38bdf8",
       "models": [
         {
@@ -58,6 +61,7 @@
           "model_name": "AledA V1 Smart Architectural Controller",
           "chip": "Multi-Zone Smart Controller",
           "hw_rev": "1.0",
+          "emblem": "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
           "offsets": [
             0,
             32768,
@@ -90,6 +94,7 @@
       "latest_version": "1.0.1",
       "tagline": "Universal Matter IR Bridge · Custom Profiles · Live Signal Learning",
       "icon": "radio",
+      "emblem": "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
       "accent": "#a855f7",
       "models": [
         {
@@ -97,6 +102,7 @@
           "model_name": "onIR Universal Smart Home IR Bridge",
           "chip": "Smart Wireless IR Core",
           "hw_rev": "1.0",
+          "emblem": "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
           "offsets": [
             4096,
             32768,

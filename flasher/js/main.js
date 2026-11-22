@@ -161,8 +161,18 @@ function renderProductTabs() {
     btn.setAttribute("role", "tab");
     btn.setAttribute("aria-selected", isActive ? "true" : "false");
     const prodVer = prod.latest_version || prod.models?.[0]?.latest_version || "1.0.0";
+    const defaultModelId = prod.models?.[0]?.model_id || "";
+    const emblemSrc =
+      prod.emblem ||
+      (defaultModelId
+        ? `./shared/assets/emblems/edge-${prod.product_id}-${defaultModelId}-emblem.webp`
+        : "");
     btn.innerHTML = `
-      <span class="product-dot" style="background:${prod.accent || "#0a84ff"};"></span>
+      ${
+        emblemSrc
+          ? `<img src="${emblemSrc}" alt="${prod.product_name}" width="20" height="20" style="width:20px;height:20px;border-radius:5px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'" />`
+          : `<span class="product-dot" style="background:${prod.accent || "#0a84ff"};"></span>`
+      }
       <span>${prod.product_name}</span>
       <span class="product-seg-ver">v${prodVer}</span>
     `;
