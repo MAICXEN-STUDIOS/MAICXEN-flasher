@@ -1,43 +1,47 @@
 :root {
-  /* Core Palette (compatible with Dashboard & Flasher) */
+  /* MAICXEN EDGE Official Design System Tokens */
   --bg: #000000;
-  --bg-dash: #070a0f;
-  --surface: #111216;
-  --surface-dash: #0e131d;
-  --surface-2: #181a20;
-  --surface-3: #22252e;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-dash: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(10, 132, 255, 0.42);
-  --border-hover: rgba(255, 255, 255, 0.16);
-  --text: #f5f5f7;
-  --muted: #86868b;
-  --muted-dash: #8b9bb4;
-  --accent: #0a84ff;
-  --accent-2: #0066cc;
-  --blue: #2997ff;
-  --cyan: #5ac8fa;
-  --green: #30d158;
-  --success: #30d158;
-  --amber: #ff9f0a;
-  --red: #ff453a;
-  --danger: #ff453a;
-  --purple: #bf5af2;
-  --radius: 14px;
+  --bg-dash: #000000;
+  --surface: #09090b;
+  --surface-dash: #09090b;
+  --surface-2: #111115;
+  --surface-3: #18181e;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-dash: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(0, 255, 195, 0.38);
+  --border-hover: rgba(0, 255, 195, 0.28);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.58);
+  --muted-dash: rgba(255, 255, 255, 0.58);
 
-  /* Apple-style Extended Tokens */
+  /* EDGE Cyber Mint Accent Palette */
+  --accent: #00ffc3;
+  --accent-2: #00d9a6;
+  --accent-soft: rgba(0, 255, 195, 0.12);
+  --accent-glow: rgba(0, 255, 195, 0.34);
+  --blue: #00ffc3;
+  --cyan: #33ffd0;
+  --green: #00ffc3;
+  --success: #00ffc3;
+  --amber: #ffaa00;
+  --red: #ff4d5e;
+  --danger: #ff4d5e;
+  --purple: #c084fc;
+  --radius: 16px;
+
+  /* Extended Surface & Typography Tokens (aligned with MAICXEN_site & MAICXEN_console) */
   --apple-bg: #000000;
-  --apple-elevated: rgba(28, 28, 30, 0.72);
-  --apple-surface: #141417;
-  --apple-surface-hover: #1c1c21;
-  --apple-hairline: rgba(255, 255, 255, 0.085);
-  --apple-hairline-strong: rgba(255, 255, 255, 0.14);
-  --apple-text: #f5f5f7;
-  --apple-text-secondary: #a1a1a6;
-  --apple-text-tertiary: #6e6e73;
-  --apple-accent: #0a84ff;
-  --apple-accent-hover: #409cff;
-  --apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+  --apple-elevated: rgba(9, 9, 11, 0.88);
+  --apple-surface: #09090b;
+  --apple-surface-hover: #121216;
+  --apple-hairline: rgba(255, 255, 255, 0.09);
+  --apple-hairline-strong: rgba(255, 255, 255, 0.16);
+  --apple-text: #ffffff;
+  --apple-text-secondary: rgba(255, 255, 255, 0.65);
+  --apple-text-tertiary: rgba(255, 255, 255, 0.42);
+  --apple-accent: #00ffc3;
+  --apple-accent-hover: #33ffd0;
+  --apple-font: "Satoshi", "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
   --apple-mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -49,6 +53,7 @@
 
 html {
   color-scheme: dark;
+  background-color: #000000;
 }
 
 body {
@@ -59,6 +64,29 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(0, 255, 195, 0.24);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050507;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 195, 0.35);
 }
 
 @media (max-width: 768px) {

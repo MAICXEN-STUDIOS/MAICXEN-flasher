@@ -4,7 +4,7 @@
 
 body {
   background:
-    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(41, 151, 255, 0.11), transparent 68%),
+    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(0, 255, 195, 0.12), transparent 68%),
     var(--apple-bg);
   color: var(--apple-text);
   min-height: 100vh;
@@ -117,9 +117,9 @@ body {
 }
 
 .view-tab.active {
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  background: rgba(0, 255, 195, 0.13);
+  color: #00ffc3;
+  box-shadow: inset 0 0 0 1px rgba(0, 255, 195, 0.34);
 }
 
 .topbar-actions {
@@ -244,9 +244,9 @@ body {
 }
 
 .product-seg-btn.active {
-  background: #242429;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  background: rgba(0, 255, 195, 0.12);
+  color: #00ffc3;
+  box-shadow: inset 0 0 0 1px rgba(0, 255, 195, 0.36), 0 0 18px rgba(0, 255, 195, 0.12);
 }
 
 .product-dot {
@@ -268,11 +268,25 @@ body {
 
 /* --- Hardware Preview Stage --- */
 .hardware-stage {
-  background: linear-gradient(180deg, #0d0d10 0%, #09090b 100%);
-  border: 1px solid var(--apple-hairline);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b0b0f 0%, #070709 100%);
+  border: 1px solid rgba(0, 255, 195, 0.24);
+  box-shadow: 0 0 42px rgba(0, 255, 195, 0.08);
   border-radius: 22px;
   padding: 32px 28px 20px;
   margin-bottom: 32px;
+}
+
+.hardware-stage::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 195, 0.68) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 .pcb-canvas {
@@ -434,9 +448,9 @@ body {
   gap: 8px;
   padding: 7px 13px;
   border-radius: 999px;
-  background: rgba(48, 209, 88, 0.11);
-  border: 1px solid rgba(48, 209, 88, 0.28);
-  color: #30d158;
+  background: rgba(0, 255, 195, 0.10);
+  border: 1px solid rgba(0, 255, 195, 0.34);
+  color: #00ffc3;
   font-family: var(--apple-mono);
   font-size: 13px;
   font-weight: 600;
@@ -446,15 +460,16 @@ body {
 
 .version-trigger:hover,
 .popover-anchor.open .version-trigger {
-  background: rgba(48, 209, 88, 0.18);
-  border-color: rgba(48, 209, 88, 0.5);
+  background: rgba(0, 255, 195, 0.18);
+  border-color: rgba(0, 255, 195, 0.55);
 }
 
 .version-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #30d158;
+  background: #00ffc3;
+  box-shadow: 0 0 8px rgba(0, 255, 195, 0.65);
 }
 
 .info-icon {
@@ -599,10 +614,12 @@ body {
 
 .ios-switch input:checked + .ios-slider {
   background: var(--apple-accent);
+  box-shadow: 0 0 14px rgba(0, 255, 195, 0.42);
 }
 
 .ios-switch input:checked + .ios-slider::before {
   transform: translateX(18px);
+  background: #000000;
 }
 
 /* --- Primary CTA, Progress & Status --- */
@@ -613,10 +630,10 @@ body {
 .primary-btn {
   width: 100%;
   height: 54px;
-  border: none;
+  border: 1px solid rgba(0, 255, 195, 0.85);
   border-radius: 14px;
   background: var(--apple-accent);
-  color: #ffffff;
+  color: #000000;
   font-family: inherit;
   font-size: 15.5px;
   font-weight: 600;
@@ -626,11 +643,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: background 0.18s ease, transform 0.12s ease, opacity 0.18s ease;
+  box-shadow: 0 0 26px rgba(0, 255, 195, 0.34);
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease, opacity 0.18s ease;
 }
 
 .primary-btn:hover:not(:disabled) {
   background: var(--apple-accent-hover);
+  box-shadow: 0 0 34px rgba(0, 255, 195, 0.48);
 }
 
 .primary-btn:active:not(:disabled) {
