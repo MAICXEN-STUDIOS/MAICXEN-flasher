@@ -11,11 +11,11 @@
     69632,
     131072
   ],
-  "version": "1.1.6",
+  "version": "1.1.7",
   "url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/boot_app0.bin",
-  "notes": "v1.1.6 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling to guarantee zero spontaneous reboots or LED interruptions during runtime. Updates run automatically on boot and immediately upon Supabase release notification."
+  "notes": "v1.1.7 — Restore ultra-responsive Alexa/Matter reaction & silky-smooth fades: offloaded blocking Supabase TLS telemetry to an async Core 0 worker task, deferred NVS/network work during active fades, clamped FadeEngine per-frame dt to 35ms, and prioritized Matter + FadeEngine at top of loop()."
 }
