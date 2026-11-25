@@ -11,11 +11,11 @@
     69632,
     131072
   ],
-  "version": "1.1.5",
+  "version": "1.1.6",
   "url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/boot_app0.bin",
-  "notes": "v1.1.5 — Fix intermittent LED shutoff: prevent routine daily FOTA checks from rebooting when Matter heap is fragmented, add ScopedChipStackLock around Matter ColorMode polling, add 3-sample thermal spike filter, and raise TLS telemetry heap safety margin."
+  "notes": "v1.1.6 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling to guarantee zero spontaneous reboots or LED interruptions during runtime. Updates run automatically on boot and immediately upon Supabase release notification."
 }
