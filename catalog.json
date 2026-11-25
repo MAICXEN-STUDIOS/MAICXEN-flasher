@@ -3,7 +3,7 @@
   "domain": "iot.maicxen.it",
   "flasher_version": "2.6.0",
   "dashboard_version": "3.3.1",
-  "updated_at": "2026-11-25T21:09:27Z",
+  "updated_at": "2026-11-25T21:30:44Z",
   "products": [
     {
       "product_id": "smarty",
@@ -50,7 +50,7 @@
     {
       "product_id": "aleda",
       "product_name": "AledA",
-      "latest_version": "1.1.7",
+      "latest_version": "1.1.8",
       "tagline": "Multi-Zone Architectural Lighting & Power Controller · Local Web UI · Matter / Voice Sync",
       "icon": "sun",
       "emblem": "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
@@ -68,7 +68,7 @@
             69632,
             131072
           ],
-          "latest_version": "1.1.7",
+          "latest_version": "1.1.8",
           "version_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
@@ -84,7 +84,7 @@
             "cloud_fota",
             "local_web"
           ],
-          "notes": "v1.1.7 — Restore ultra-responsive Alexa/Matter reaction & silky-smooth fades: offloaded blocking Supabase TLS telemetry to an async Core 0 worker task, deferred NVS/network work during active fades, clamped FadeEngine per-frame dt to 35ms, and prioritized Matter + FadeEngine at top of loop()."
+          "notes": "v1.1.8 — Fix false OFFLINE status in IoT Dashboard: tuned Core 0 async telemetry stack (4.6KB) and post-Matter heap guard (46KB free / 18KB maxAlloc) so 45s heartbeats run reliably without ever blocking fades or Alexa."
         }
       ]
     },
