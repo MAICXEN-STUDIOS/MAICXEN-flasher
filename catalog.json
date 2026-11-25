@@ -3,12 +3,12 @@
   "domain": "iot.maicxen.it",
   "flasher_version": "2.6.0",
   "dashboard_version": "3.3.0",
-  "updated_at": "2026-11-25T19:50:24Z",
+  "updated_at": "2026-11-25T20:35:02Z",
   "products": [
     {
       "product_id": "smarty",
       "product_name": "Smarty",
-      "latest_version": "1.7.0",
+      "latest_version": "1.7.1",
       "tagline": "Interactive RGB Matrix · Touch & Ambient Sensing · USB & Cloud Updates",
       "icon": "grid",
       "emblem": "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
@@ -26,7 +26,7 @@
             69632,
             131072
           ],
-          "latest_version": "1.7.0",
+          "latest_version": "1.7.1",
           "version_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
@@ -43,14 +43,14 @@
             "local_web",
             "alexa"
           ],
-          "notes": "v1.7.0 — FOTA-safe per-device SinricPro identity stored in ESP32 NVS (smarty_cloud): preserves unique Alexa Device ID across all OTA updates, with one-click Smarty #1 / Smarty #2 presets + custom credentials in Web UI and remote IoT Fleet JSON commands."
+          "notes": "v1.7.1 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling; preserves FOTA-safe per-device NVS SinricPro identity while updating automatically on boot or immediately upon Supabase release notification."
         }
       ]
     },
     {
       "product_id": "aleda",
       "product_name": "AledA",
-      "latest_version": "1.1.5",
+      "latest_version": "1.1.6",
       "tagline": "Multi-Zone Architectural Lighting & Power Controller · Local Web UI · Matter / Voice Sync",
       "icon": "sun",
       "emblem": "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
@@ -68,7 +68,7 @@
             69632,
             131072
           ],
-          "latest_version": "1.1.5",
+          "latest_version": "1.1.6",
           "version_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
@@ -84,14 +84,14 @@
             "cloud_fota",
             "local_web"
           ],
-          "notes": "v1.1.5 — Fix intermittent LED shutoff: prevent routine daily FOTA checks from rebooting when Matter heap is fragmented, add ScopedChipStackLock around Matter ColorMode polling, add 3-sample thermal spike filter, and raise TLS telemetry heap safety margin."
+          "notes": "v1.1.6 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling to guarantee zero spontaneous reboots or LED interruptions during runtime. Updates run automatically on boot and immediately upon Supabase release notification."
         }
       ]
     },
     {
       "product_id": "onir",
       "product_name": "onIR",
-      "latest_version": "1.0.1",
+      "latest_version": "1.0.2",
       "tagline": "Universal Matter IR Bridge · Custom Profiles · Live Signal Learning",
       "icon": "radio",
       "emblem": "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
@@ -109,7 +109,7 @@
             57344,
             65536
           ],
-          "latest_version": "1.0.1",
+          "latest_version": "1.0.2",
           "version_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/bootloader.bin",
@@ -125,7 +125,7 @@
             "cloud_fota",
             "local_web"
           ],
-          "notes": "v1.0.1 — Fix Web UI IR form reset caused by ambient RX frames during polling + stricter IR noise filter (>= 12 edges)."
+          "notes": "v1.0.2 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling; updates automatically on boot or immediately upon Supabase release notification."
         }
       ]
     }
