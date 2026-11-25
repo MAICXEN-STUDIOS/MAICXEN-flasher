@@ -11,11 +11,11 @@
     57344,
     65536
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/onir/esp32-matter/boot_app0.bin",
-  "notes": "v1.0.1 — Fix Web UI IR form reset caused by ambient RX frames during polling + stricter IR noise filter (>= 12 edges)."
+  "notes": "v1.0.2 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling; updates automatically on boot or immediately upon Supabase release notification."
 }
