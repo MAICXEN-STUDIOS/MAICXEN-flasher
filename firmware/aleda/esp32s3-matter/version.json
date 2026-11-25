@@ -11,11 +11,11 @@
     69632,
     131072
   ],
-  "version": "1.1.4",
+  "version": "1.1.5",
   "url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/boot_app0.bin",
-  "notes": "v1.1.4 — Fix AledA WebServer & telemetry OOM/starvation: remove 45KB resident Keep-Alive TLS & HTTPClient overhead, zero-fragmentation raw HTTP/1.1 POST + /api/status, and 45s non-blocking heartbeat."
+  "notes": "v1.1.5 — Fix intermittent LED shutoff: prevent routine daily FOTA checks from rebooting when Matter heap is fragmented, add ScopedChipStackLock around Matter ColorMode polling, add 3-sample thermal spike filter, and raise TLS telemetry heap safety margin."
 }

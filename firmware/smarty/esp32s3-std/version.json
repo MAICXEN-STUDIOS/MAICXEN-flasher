@@ -3,7 +3,7 @@
   "product_name": "Smarty",
   "model_id": "esp32s3-std",
   "model_name": "Smarty Ambient RGB Matrix Display",
-  "chip": "ESP32",
+  "chip": "Dual-Core Matrix Controller",
   "hw_rev": "1.0",
   "offsets": [
     0,
@@ -11,11 +11,11 @@
     69632,
     131072
   ],
-  "version": "1.6.1",
+  "version": "1.7.0",
   "url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/boot_app0.bin",
-  "notes": "v1.6.1 — Enabled native ESP32-S3 USB-CDC (HWCDC) alongside UART0 for zero-reset Live USB Telemetry and WebSerial FOTA."
+  "notes": "v1.7.0 — FOTA-safe per-device SinricPro identity stored in ESP32 NVS (smarty_cloud): preserves unique Alexa Device ID across all OTA updates, with one-click Smarty #1 / Smarty #2 presets + custom credentials in Web UI and remote IoT Fleet JSON commands."
 }

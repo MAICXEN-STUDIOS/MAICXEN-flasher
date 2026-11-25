@@ -182,7 +182,35 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
   color: var(--apple-accent-hover);
-  margin-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.hero-emblem-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.hero-emblem-frame {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  padding: 6px;
+  background: rgba(14, 16, 22, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 28px var(--emblem-glow, rgba(0, 255, 195, 0.18));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.hero-emblem-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+  display: block;
 }
 
 .hero-title {

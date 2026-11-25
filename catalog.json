@@ -3,12 +3,12 @@
   "domain": "iot.maicxen.it",
   "flasher_version": "2.4.0",
   "dashboard_version": "3.2.0",
-  "updated_at": "2026-11-23T00:02:41Z",
+  "updated_at": "2026-11-25T03:35:21Z",
   "products": [
     {
       "product_id": "smarty",
       "product_name": "Smarty",
-      "latest_version": "1.6.1",
+      "latest_version": "1.7.0",
       "tagline": "Interactive RGB Matrix · Touch & Ambient Sensing · USB & Cloud Updates",
       "icon": "grid",
       "emblem": "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
@@ -17,7 +17,7 @@
         {
           "model_id": "esp32s3-std",
           "model_name": "Smarty Ambient RGB Matrix Display",
-          "chip": "ESP32",
+          "chip": "Dual-Core Matrix Controller",
           "hw_rev": "1.0",
           "emblem": "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
           "offsets": [
@@ -26,7 +26,7 @@
             69632,
             131072
           ],
-          "latest_version": "1.6.1",
+          "latest_version": "1.7.0",
           "version_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
@@ -43,14 +43,14 @@
             "local_web",
             "alexa"
           ],
-          "notes": "v1.6.1 — Enabled native ESP32-S3 USB-CDC (HWCDC) alongside UART0 for zero-reset Live USB Telemetry and WebSerial FOTA."
+          "notes": "v1.7.0 — FOTA-safe per-device SinricPro identity stored in ESP32 NVS (smarty_cloud): preserves unique Alexa Device ID across all OTA updates, with one-click Smarty #1 / Smarty #2 presets + custom credentials in Web UI and remote IoT Fleet JSON commands."
         }
       ]
     },
     {
       "product_id": "aleda",
       "product_name": "AledA",
-      "latest_version": "1.1.4",
+      "latest_version": "1.1.5",
       "tagline": "Multi-Zone Architectural Lighting & Power Controller · Local Web UI · Matter / Voice Sync",
       "icon": "sun",
       "emblem": "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
@@ -68,7 +68,7 @@
             69632,
             131072
           ],
-          "latest_version": "1.1.4",
+          "latest_version": "1.1.5",
           "version_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/version.json",
           "firmware_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/firmware.bin",
           "bootloader_url": "https://iot.maicxen.it/firmware/aleda/esp32s3-matter/bootloader.bin",
@@ -84,7 +84,7 @@
             "cloud_fota",
             "local_web"
           ],
-          "notes": "v1.1.4 — Fix AledA WebServer & telemetry OOM/starvation: remove 45KB resident Keep-Alive TLS & HTTPClient overhead, zero-fragmentation raw HTTP/1.1 POST + /api/status, and 45s non-blocking heartbeat."
+          "notes": "v1.1.5 — Fix intermittent LED shutoff: prevent routine daily FOTA checks from rebooting when Matter heap is fragmented, add ScopedChipStackLock around Matter ColorMode polling, add 3-sample thermal spike filter, and raise TLS telemetry heap safety margin."
         }
       ]
     },
@@ -100,7 +100,7 @@
         {
           "model_id": "esp32-matter",
           "model_name": "onIR Universal Smart Home IR Bridge",
-          "chip": "Smart Wireless IR Core",
+          "chip": "ESP32",
           "hw_rev": "1.0",
           "emblem": "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
           "offsets": [
