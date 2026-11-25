@@ -187,6 +187,7 @@ export class MaicxenModel {
     this.model_name = data.model_name || this.model_id;
     this.chip = data.chip || "ESP32-S3";
     this.hw_rev = data.hw_rev || "1.0";
+    this.emblem = data.emblem || "";
     this.offsets = Array.isArray(data.offsets)
       ? data.offsets
       : isClassicEsp32
@@ -209,6 +210,7 @@ export class MaicxenProduct {
     product_name,
     latest_version = "1.0.0",
     tagline = "",
+    emblem = "",
     accent = "#0a84ff",
     models = [],
     renderIllustration = null
@@ -217,6 +219,7 @@ export class MaicxenProduct {
     this.product_name = product_name || this.product_id;
     this.latest_version = latest_version;
     this.tagline = tagline;
+    this.emblem = emblem || "";
     this.accent = accent;
     this.models = models.map((m) => (m instanceof MaicxenModel ? m : new MaicxenModel(m)));
     this._renderIllustration = renderIllustration || renderGenericModuleSvg;
@@ -273,6 +276,7 @@ export class MaicxenProductRegistry {
         product_name: raw.product_name || existing?.product_name || id,
         latest_version: raw.latest_version || existing?.latest_version || "1.0.0",
         tagline: raw.tagline || raw.description || existing?.tagline || "",
+        emblem: raw.emblem || existing?.emblem || "",
         accent: existing?.accent || raw.accent || "#0a84ff",
         models: Array.isArray(raw.models) && raw.models.length > 0 ? raw.models : existing?.models || [],
         renderIllustration: existing?._renderIllustration || renderGenericModuleSvg
@@ -291,8 +295,9 @@ export class MaicxenProductRegistry {
 MaicxenProductRegistry.register({
   product_id: "smarty",
   product_name: "Smarty",
-  latest_version: "1.6.1",
+  latest_version: "1.7.0",
   tagline: "Addressable RGB Light Matrix · Capacitive Touch · Hybrid USB/Cloud FOTA",
+  emblem: "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
   accent: "#ff9f0a",
   renderIllustration: renderSmartySvg,
   models: [
@@ -301,14 +306,15 @@ MaicxenProductRegistry.register({
       model_name: "Smarty 23×5 RGB Matrix (ESP32-S3)",
       chip: "ESP32-S3",
       hw_rev: "1.0",
-      latest_version: "1.6.1",
+      emblem: "./shared/assets/emblems/edge-smarty-esp32s3-std-emblem.webp",
+      latest_version: "1.7.0",
       version_url: "./firmware/smarty/esp32s3-std/version.json",
       firmware_url: "./firmware/smarty/esp32s3-std/firmware.bin",
       bootloader_url: "./firmware/smarty/esp32s3-std/bootloader.bin",
       partitions_url: "./firmware/smarty/esp32s3-std/partitions.bin",
       boot_app0_url: "./firmware/smarty/esp32s3-std/boot_app0.bin",
       capabilities: ["power", "brightness", "rgb", "effects", "usb_fota", "cloud_fota", "local_web", "alexa"],
-      notes: "v1.6.1 — Enabled native ESP32-S3 USB-CDC (HWCDC) alongside UART0 for zero-reset Live USB Telemetry and WebSerial FOTA."
+      notes: "v1.7.0 — FOTA-safe per-device SinricPro identity stored in ESP32 NVS (smarty_cloud): preserves unique Alexa Device ID across all OTA updates."
     }
   ]
 });
@@ -316,8 +322,9 @@ MaicxenProductRegistry.register({
 MaicxenProductRegistry.register({
   product_id: "aleda",
   product_name: "AledA",
-  latest_version: "1.1.4",
+  latest_version: "1.1.5",
   tagline: "Architectural 4-Relay, 4-Dimmer & 3-Strip Hub · Local Web UI · Matter",
+  emblem: "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
   accent: "#2997ff",
   renderIllustration: renderAledaSvg,
   models: [
@@ -326,14 +333,15 @@ MaicxenProductRegistry.register({
       model_name: "AledA Matter over Wi-Fi Controller (ESP32-S3)",
       chip: "ESP32-S3",
       hw_rev: "1.0",
-      latest_version: "1.1.4",
+      emblem: "./shared/assets/emblems/edge-aleda-esp32s3-matter-emblem.webp",
+      latest_version: "1.1.5",
       version_url: "./firmware/aleda/esp32s3-matter/version.json",
       firmware_url: "./firmware/aleda/esp32s3-matter/firmware.bin",
       bootloader_url: "./firmware/aleda/esp32s3-matter/bootloader.bin",
       partitions_url: "./firmware/aleda/esp32s3-matter/partitions.bin",
       boot_app0_url: "./firmware/aleda/esp32s3-matter/boot_app0.bin",
       capabilities: ["power", "relays", "dimmers", "strips", "matter", "usb_fota", "cloud_fota", "local_web"],
-      notes: "v1.1.4 — Fix AledA WebServer & telemetry OOM/starvation: remove 45KB resident Keep-Alive TLS & HTTPClient overhead, zero-fragmentation raw HTTP/1.1 POST + /api/status, and 45s non-blocking heartbeat."
+      notes: "v1.1.5 — Fix intermittent LED shutoff: prevent routine daily FOTA checks from rebooting when Matter heap is fragmented, add ScopedChipStackLock around ColorMode polling, and 3-sample thermal filter."
     }
   ]
 });
@@ -343,6 +351,7 @@ MaicxenProductRegistry.register({
   product_name: "onIR",
   latest_version: "1.0.1",
   tagline: "Universal Matter-over-WiFi Infrared Bridge · Live IR Learning · Dual-Core",
+  emblem: "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
   accent: "#bf5af2",
   renderIllustration: renderOnIrSvg,
   models: [
@@ -351,6 +360,7 @@ MaicxenProductRegistry.register({
       model_name: "onIR Universal IR Bridge (ESP32 Matter)",
       chip: "ESP32",
       hw_rev: "1.0",
+      emblem: "./shared/assets/emblems/edge-onir-esp32-matter-emblem.webp",
       offsets: [4096, 32768, 57344, 65536],
       latest_version: "1.0.1",
       version_url: "./firmware/onir/esp32-matter/version.json",
@@ -369,7 +379,21 @@ export const DEFAULT_CATALOG_PRODUCTS = MaicxenProductRegistry.getAll();
 export async function fetchPublicCatalog(sbClient, catalogJsonUrl = "./catalog.json") {
   let rawProducts = [];
 
-  if (sbClient) {
+  // 1. Primary source of truth: live catalog.json published directly from compiled firmware & manifests
+  try {
+    const res = await fetch(`${catalogJsonUrl}?cb=${Date.now()}`, { cache: "no-store" });
+    if (res.ok) {
+      const cat = await res.json();
+      if (cat.products && cat.products.length > 0) {
+        rawProducts = cat.products;
+      }
+    }
+  } catch {
+    // Fallback to Supabase below
+  }
+
+  // 2. Fallback to Supabase product_catalog if catalog.json is unavailable
+  if (rawProducts.length === 0 && sbClient) {
     const { data, error } = await sbClient
       .from("product_catalog")
       .select("*")
@@ -385,6 +409,7 @@ export async function fetchPublicCatalog(sbClient, catalogJsonUrl = "./catalog.j
             product_name: row.product_name,
             latest_version: row.latest_version,
             tagline: row.description || "",
+            emblem: `./shared/assets/emblems/edge-${row.product_id}-${row.model_id}-emblem.webp`,
             models: []
           };
         }
@@ -395,6 +420,7 @@ export async function fetchPublicCatalog(sbClient, catalogJsonUrl = "./catalog.j
           model_name: row.model_name,
           chip: row.chip,
           hw_rev: row.hw_rev,
+          emblem: `./shared/assets/emblems/edge-${row.product_id}-${row.model_id}-emblem.webp`,
           offsets: isClassicEsp32 ? [4096, 32768, 57344, 65536] : [0, 32768, 69632, 131072],
           latest_version: prodVer,
           version_url: row.version_url || `./firmware/${row.product_id}/${row.model_id}/version.json`,
@@ -407,16 +433,6 @@ export async function fetchPublicCatalog(sbClient, catalogJsonUrl = "./catalog.j
         });
       });
       rawProducts = Object.values(grouped);
-    }
-  }
-
-  if (rawProducts.length === 0) {
-    const res = await fetch(`${catalogJsonUrl}?cb=${Date.now()}`, { cache: "no-store" });
-    if (res.ok) {
-      const cat = await res.json();
-      if (cat.products && cat.products.length > 0) {
-        rawProducts = cat.products;
-      }
     }
   }
 
