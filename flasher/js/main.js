@@ -108,23 +108,47 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") setPopoverOpen(false);
 });
 
-// --- Visualizers & Logging ---
+// --- Emblem Hardware Stage & Logging ---
+function renderEmblemStage({ progressPct = -1, isError = false, customColor = null } = {}) {
+  const prodId = selectedProduct?.product_id || "smarty";
+  const prodName = selectedProduct?.product_name || "MAICXEN EDGE";
+  const modelId = selectedModel?.model_id || selectedProduct?.models?.[0]?.model_id || "esp32s3-std";
+  const emblemSrc =
+    selectedModel?.emblem ||
+    selectedProduct?.emblem ||
+    `./shared/assets/emblems/edge-${prodId}-${modelId}-emblem.webp`;
+  const accent = isError ? "#ff453a" : customColor || selectedProduct?.accent || "#00ffc3";
+  const pct = Math.max(0, Math.min(100, Math.round(progressPct)));
+
+  pcbVisEl.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:10px 0;width:100%;">
+      <div style="position:relative;width:136px;height:136px;border-radius:28px;padding:12px;background:rgba(12,14,20,0.92);border:1px solid ${accent}55;box-shadow:0 18px 44px rgba(0,0,0,0.72),0 0 42px ${accent}2e;display:flex;align-items:center;justify-content:center;transition:all 0.25s ease;">
+        <img
+          src="${emblemSrc}"
+          alt="${prodName} Emblem"
+          width="112"
+          height="112"
+          style="width:100%;height:100%;border-radius:18px;object-fit:contain;display:block;"
+          onerror="this.style.visibility='hidden'"
+        />
+      </div>
+      ${
+        progressPct >= 0
+          ? `<div style="width:220px;height:5px;border-radius:999px;background:rgba(255,255,255,0.09);overflow:hidden;">
+               <div style="width:${pct}%;height:100%;border-radius:999px;background:${accent};box-shadow:0 0 12px ${accent};transition:width 0.2s ease;"></div>
+             </div>`
+          : ""
+      }
+    </div>
+  `;
+}
+
 function renderIdleBitmap(isError = false, customColor = null) {
-  if (selectedProduct && typeof selectedProduct.renderSvg === "function") {
-    pcbVisEl.innerHTML = selectedProduct.renderSvg({ progressPct: -1, isError, customColor });
-    return;
-  }
-  const prodId = selectedProduct ? selectedProduct.product_id : "smarty";
-  pcbVisEl.innerHTML = MaicxenProductRegistry.renderIllustration(prodId, { progressPct: -1, isError, customColor });
+  renderEmblemStage({ progressPct: -1, isError, customColor });
 }
 
 function renderMatrixProgress(pct) {
-  if (selectedProduct && typeof selectedProduct.renderSvg === "function") {
-    pcbVisEl.innerHTML = selectedProduct.renderSvg({ progressPct: pct });
-    return;
-  }
-  const prodId = selectedProduct ? selectedProduct.product_id : "smarty";
-  pcbVisEl.innerHTML = MaicxenProductRegistry.renderIllustration(prodId, { progressPct: pct });
+  renderEmblemStage({ progressPct: pct });
 }
 
 function logLine(msg) {
