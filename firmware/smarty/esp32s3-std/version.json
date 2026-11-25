@@ -11,11 +11,11 @@
     69632,
     131072
   ],
-  "version": "1.7.0",
+  "version": "1.7.1",
   "url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
   "firmware_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/firmware.bin",
   "bootloader_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/bootloader.bin",
   "partitions_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/partitions.bin",
   "boot_app0_url": "https://iot.maicxen.it/firmware/smarty/esp32s3-std/boot_app0.bin",
-  "notes": "v1.7.0 — FOTA-safe per-device SinricPro identity stored in ESP32 NVS (smarty_cloud): preserves unique Alexa Device ID across all OTA updates, with one-click Smarty #1 / Smarty #2 presets + custom credentials in Web UI and remote IoT Fleet JSON commands."
+  "notes": "v1.7.1 — Event-driven Cloud Push FOTA: removed 24h background FOTA polling; preserves FOTA-safe per-device NVS SinricPro identity while updating automatically on boot or immediately upon Supabase release notification."
 }
